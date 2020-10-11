@@ -43,7 +43,7 @@
         ast (.parse processor vfile)
         content (transform-ast ast)]
     {:type :page
-     :content content}))
+     :content `[[:body ~@content]]}))
 
 (defn get-md-files
   "Recursively searches `src` for .md and .markdown files."

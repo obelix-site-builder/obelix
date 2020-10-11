@@ -3,6 +3,22 @@
             path
             [hiccups.runtime :as hiccup]))
 
+(defn add-head
+  "Adds the proper <meta> attributes to the <head> of `content`,
+  creating it if necessary."
+  [content]
+  (let [head (or (first (filter #(= (first %) :head) content)) [:head])
+        head (if (empty? (filter #(and (= (first %) :meta) (:charset (second %))) (rest head)))
+               (conj head [:meta {:charset "UTF-8"}])
+               head)
+        head (if (empty? (filter #(and (= (first %) :meta) (= (:name (second %)) "viewport"))
+                                 (rest head)))
+               (conj head [:meta {:name "viewport"
+                                  :content "width=device-width, initial-scale=1.0"}])
+
+               head)]
+    (into [head] (remove #(= (first %) :head) content))))
+
 (defn render-node
   "Recursively renders a node in the `:routes` map."
   [out node current-path]
@@ -11,7 +27,7 @@
     (fs/writeFileSync (str (apply path/resolve out current-path) ".html")
                       (str
                        "<!DOCTYPE html>\n"
-                       (hiccup/render-html `[:html ~@(:content node)])))
+                       (hiccup/render-html `[:html ~@(add-head (:content node))])))
     (and (:type node) (= (:type node) :asset))
     (fs/writeFileSync (apply path/resolve out current-path) (:data node))
     (map? node) (do
