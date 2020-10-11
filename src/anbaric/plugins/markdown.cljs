@@ -60,7 +60,7 @@
                                                                 children)))))))]
     (iter [] src)))
 
-(defn plugin-markdown
+(defn plugin
   "Reads Markdown files from disk, parses them and puts them in
   the :routes map."
   [{:keys [src]}]
