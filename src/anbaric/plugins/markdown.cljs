@@ -65,15 +65,13 @@
   the :routes map."
   [{:keys [src]}]
   (fn [handler]
-    (let [pages (get-md-files src)
-          pages-old (->> (get-md-files src)
-                         (map (partial str src path/sep))
-                         (map vfile/readSync)
-                         (map parse-markdown))]
+    (let [pages (get-md-files src)]
       (fn [site-map]
         (let [site-map (handler site-map)]
           (reduce (fn [site-map page-path]
-                    (let [path (s/split page-path sep-re)
+                    (let [path (map #(path/basename (path/basename % ".md")
+                                                    ".markdown")
+                                    (s/split page-path sep-re))
                           parsed (-> (path/resolve src page-path)
                                      (vfile/readSync)
                                      (parse-markdown))]
