@@ -1,2 +1,2 @@
 {:deps {org.clojure/clojurescript {:mvn/version "1.10.758"}
-        hiccups {:mvn/version "0.3.0"}}}
+        hiccups/hiccups {:mvn/version "0.3.0"}}}
