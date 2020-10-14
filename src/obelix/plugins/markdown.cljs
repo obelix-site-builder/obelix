@@ -1,8 +1,8 @@
-(ns anbaric.plugins.markdown
+(ns obelix.plugins.markdown
   (:require ["remark-parse" :as remark]
             ["remark-rehype" :as remark->rehype]
             ["unified-stream" :as stream]
-            [anbaric.util :as util]
+            [obelix.util :as util]
             [clojure.string :as s]
             fs
             path

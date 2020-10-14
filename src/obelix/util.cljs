@@ -1,4 +1,4 @@
-(ns anbaric.util)
+(ns obelix.util)
 
 (defn map-routes
   "Maps the function `f` over all nodes in the `routes` list."

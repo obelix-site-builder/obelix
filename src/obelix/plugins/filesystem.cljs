@@ -1,4 +1,4 @@
-(ns anbaric.plugins.filesystem
+(ns obelix.plugins.filesystem
   (:require [clojure.string :as s]
             fs
             path))

@@ -1,4 +1,4 @@
-(ns anbaric.plugins.renderer
+(ns obelix.plugins.renderer
   (:require fs
             path
             [hiccups.runtime :as hiccup]))

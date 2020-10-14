@@ -1,7 +1,7 @@
-(ns anbaric.core
-  (:require [anbaric.plugins.filesystem :as filesystem]
-            [anbaric.plugins.markdown :as markdown]
-            [anbaric.plugins.renderer :as renderer]))
+(ns obelix.core
+  (:require [obelix.plugins.filesystem :as filesystem]
+            [obelix.plugins.markdown :as markdown]
+            [obelix.plugins.renderer :as renderer]))
 
 (defn root-handler
   "The root handler, returning an empty site map."

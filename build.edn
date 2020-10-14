@@ -1,7 +1,7 @@
 {:output-dir "out"
  :output-to "out/main.js"
  :optimizations :none
- :main anbaric.core
+ :main obelix.core
  :target :nodejs
  :install-deps true
  :npm-deps {:rehype-stringify "8.0.0"
