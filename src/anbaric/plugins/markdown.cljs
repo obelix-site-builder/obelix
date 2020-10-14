@@ -1,12 +1,13 @@
 (ns anbaric.plugins.markdown
   (:require ["remark-parse" :as remark]
             ["remark-rehype" :as remark->rehype]
-            ["to-vfile" :as vfile]
             ["unified-stream" :as stream]
+            [anbaric.util :as util]
+            [clojure.string :as s]
             fs
             path
             unified
-            [clojure.string :as s]))
+            vfile))
 
 (def md-re #".*(\.md|\.markdown)")
 (def sep-re (re-pattern path/sep))
@@ -36,45 +37,35 @@
     "link" (make-element :a {:href (.-url ast)} (.-children ast))
     "text" (.-value ast)))
 
-(defn parse-markdown [vfile]
+(defn parse-markdown [file]
   (let [processor (-> (unified)
                       (.use remark)
                       (.use remark->rehype))
-        ast (.parse processor vfile)
+        ast (.parse processor file)
         content (transform-ast ast)]
-    {:type :page
-     :content `[[:body ~@content]]}))
+    content))
 
-(defn get-md-files
-  "Recursively searches `src` for .md and .markdown files."
-  [src]
-  (let [src (path/resolve src)
-        iter (fn iter [acc path]
-               (let [stat (fs/statSync path)]
-                 (cond
-                   (and (.isFile stat) (re-matches md-re path))
-                   (conj acc (path/relative src path))
-                   (.isDirectory stat) (let [children (fs/readdirSync path)]
-                                         (into acc (mapcat (partial iter acc)
-                                                           (map #(path/resolve path %)
-                                                                children)))))))]
-    (iter [] src)))
+(defn markdown-mapper
+  [{:keys [type name] :as node}]
+  (if (and (= type :assset) (re-matches md-re name))
+    (let [file (vfile (:data node))
+          content (parse-markdown vfile)]
+      (-> node
+          (assoc :content content)
+          (dissoc :data)
+          (assoc :type :page)
+          (assoc :name (str (path/basename
+                             (path/basename (:name node) ".md")
+                             ".markdown")
+                            ".html"))))
+    node))
 
 (defn plugin
-  "Reads Markdown files from disk, parses them and puts them in
-  the :routes map."
+  "Parses Markdown files in the :routes map and turns them into page
+  nodes."
   [{:keys [src]}]
   (fn [handler]
-    (let [pages (get-md-files src)]
-      (fn [site-map]
-        (let [site-map (handler site-map)]
-          (reduce (fn [site-map page-path]
-                    (let [path (map #(path/basename (path/basename % ".md")
-                                                    ".markdown")
-                                    (s/split page-path sep-re))
-                          parsed (-> (path/resolve src page-path)
-                                     (vfile/readSync)
-                                     (parse-markdown))]
-                      (assoc-in site-map (into [:routes] path) parsed)))
-                  site-map
-                  pages))))))
+    (fn [site-map]
+      (let [site-map (handler site-map)]
+        (update site-map :routes
+                (partial util/map-routes markdown-mapper))))))

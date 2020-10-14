@@ -19,6 +19,8 @@
                head)]
     (into [head] (remove #(= (first %) :head) content))))
 
+;; TODO update this to work with new routes shape
+
 (defn render-node
   "Recursively renders a node in the `:routes` map."
   [out node current-path]
