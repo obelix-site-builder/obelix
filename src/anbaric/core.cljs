@@ -1,5 +1,6 @@
 (ns anbaric.core
-  (:require [anbaric.plugins.markdown :as markdown]
+  (:require [anbaric.plugins.filesystem :as filesystem]
+            [anbaric.plugins.markdown :as markdown]
             [anbaric.plugins.renderer :as renderer]))
 
 (defn root-handler
@@ -7,22 +8,22 @@
   [site-map]
   (assoc site-map :metadata {} :routes {}))
 
-(def built-in-plugins {:markdown markdown/plugin
-                       :renderer renderer/plugin})
+;; TODO update markdown plugin to handle data from fs plugin
+;;      and figure out how config will be passed to built-in plugins
 
-(defn resolve-plugin
-  "Tries to resolve the plugin and config into a plugin function."
-  [{:keys [plugin config]}]
-  ;; TODO support loading third-party plugins from node_modules
-  ;; via something like (let [plug (js/require "plugin")] (plug/plugin (clj->js config)))
-  (if (get built-in-plugins (keyword plugin))
-    ((get built-in-plugins (keyword plugin)) config)))
+(def built-in-plugins
+  "The build-in plugins run for every build"
+  [filesystem/plugin
+   markdown/plugin
+   renderer/plugin])
 
 (defn plugin-pipeline
   "Returns the list of handlers representing the site plugin
   pipeline."
-  [{:keys [plugins]}]
-  (map resolve-plugin plugins))
+  [_config]
+  ;; TODO support loading third-party plugins from node_modules
+  ;; via something like (let [plug (js/require "plugin")] (plug/plugin (clj->js config)))
+  built-in-plugins)
 
 (defn build
   "Builds the static site configured via `config`."
