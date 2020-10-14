@@ -18,7 +18,7 @@
                                                (fs/readdirSync src)))}
       (.isFile stat) {:type :asset
                       :name (path/basename src)
-                      :data (fs/readFileSync src)})))
+                      :content (fs/readFileSync src)})))
 
 (defn plugin
   "Reads raw data from the files in `src` into the site map."

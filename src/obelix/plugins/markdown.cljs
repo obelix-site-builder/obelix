@@ -28,7 +28,7 @@
   [ast]
   ;; TODO make this an exhaustive list of all possible node types
   (condp = (.-type ast)
-    "root" (into [] (map transform-ast (.-children ast)))
+    "root" (into (list) (map transform-ast (.-children ast)))
     "heading" (let [tag (keyword (str "h" (.-depth ast)))]
                 (make-element tag (.-children ast)))
     "paragraph" (make-element :p (.-children ast))
@@ -47,12 +47,11 @@
 
 (defn markdown-mapper
   [{:keys [type name] :as node}]
-  (if (and (= type :assset) (re-matches md-re name))
-    (let [file (vfile (:data node))
-          content (parse-markdown vfile)]
+  (if (and (= type :asset) (re-matches md-re name))
+    (let [file (vfile (:content node))
+          content (parse-markdown file)]
       (-> node
           (assoc :content content)
-          (dissoc :data)
           (assoc :type :page)
           (assoc :name (str (path/basename
                              (path/basename (:name node) ".md")
@@ -63,7 +62,7 @@
 (defn plugin
   "Parses Markdown files in the :routes map and turns them into page
   nodes."
-  [{:keys [src]}]
+  [_config]
   (fn [handler]
     (fn [site-map]
       (let [site-map (handler site-map)]
