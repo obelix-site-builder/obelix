@@ -1,7 +1,6 @@
 (ns obelix.core
   (:require [obelix.plugins.filesystem :as filesystem]
             [obelix.plugins.markdown :as markdown]
-            [obelix.plugins.renderer :as renderer]
             [obelix.plugins.output :as output]))
 
 (defn built-in-plugins
@@ -9,7 +8,6 @@
   [config]
   [(filesystem/plugin config)
    (markdown/plugin config)
-   (renderer/plugin config)
    (output/plugin config)])
 
 (defn plugin-pipeline

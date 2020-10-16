@@ -1,61 +1,36 @@
 (ns obelix.plugins.markdown
   (:require ["remark-parse" :as remark]
             ["remark-rehype" :as remark->rehype]
+            ["rehype-format" :as format]
+            ["rehype-stringify" :as html]
             ["unified-stream" :as stream]
-            [obelix.util :as util]
             [clojure.string :as s]
             fs
             path
-            unified
-            vfile))
+            unified))
 
 (def md-re #".*(\.md|\.markdown)")
-(def sep-re (re-pattern path/sep))
 
-(declare transform-ast)
-
-(defn make-element
-  ([tag children]
-   `[~tag ~@(map transform-ast children)])
-  ([tag attrs children]
-   `[~tag ~attrs ~@(map transform-ast children)]))
-
-(defn code->hiccup [code]
-  `[:pre [:code {:class ~(.-lang code)} ~(.-value code)]])
-
-(defn transform-ast
-  "Parses the AST returned from remark into a Hiccup vector."
-  [ast]
-  ;; TODO make this an exhaustive list of all possible node types
-  (condp = (.-type ast)
-    "root" (into (list) (map transform-ast (.-children ast)))
-    "heading" (let [tag (keyword (str "h" (.-depth ast)))]
-                (make-element tag (.-children ast)))
-    "paragraph" (make-element :p (.-children ast))
-    "code" (code->hiccup ast)
-    "inlineCode" `[:code ~(.-value ast)]
-    "link" (make-element :a {:href (.-url ast)} (.-children ast))
-    "text" (.-value ast)))
-
-(defn parse-markdown [file]
-  (let [processor (-> (unified)
-                      (.use remark)
-                      (.use remark->rehype))
-        ast (.parse processor file)
-        content (transform-ast ast)]
-    content))
+(defn parse-markdown [content]
+  (-> (unified)
+      (.use remark)
+      (.use remark->rehype)
+      (.use format)
+      (.use html)
+      (.processSync content)
+      (.toString)))
 
 (defn markdown-mapper
   [{:keys [type name] :as node}]
   (if (and (= type :asset) (re-matches md-re name))
-    (let [file (vfile (:content node))
-          content (parse-markdown file)]
+    (let [content (parse-markdown (:content node))]
       (-> node
           (assoc :content content)
           (assoc :type :page)
-          (assoc :name (str (path/basename
-                             (path/basename (:name node) ".md")
-                             ".markdown")
+          (assoc :name (str (path/join (path/dirname name)
+                                       (path/basename
+                                        name
+                                        (path/extname name)))
                             ".html"))))
     node))
 
@@ -66,5 +41,4 @@
   (fn [handler]
     (fn [site-map]
       (let [site-map (handler site-map)]
-        (update site-map :routes
-                (partial util/map-routes markdown-mapper))))))
+        (update site-map :routes (partial map markdown-mapper))))))

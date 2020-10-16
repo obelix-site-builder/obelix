@@ -5,6 +5,7 @@
  :target :nodejs
  :install-deps true
  :npm-deps {:handlebars "4.7.6"
+            :rehype-format "3.1.0"
             :rehype-stringify "8.0.0"
             :remark-parse "8.0.2"
             :remark-rehype "7.0.0"
