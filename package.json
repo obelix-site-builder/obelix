@@ -7,6 +7,7 @@
     "rehype-stringify": "^8.0.0",
     "remark-parse": "^8.0.2",
     "remark-rehype": "^7.0.0",
+    "source-map-support": "^0.5.19",
     "to-vfile": "^6.1.0",
     "unified": "^9.0.0",
     "unified-stream": "^1.0.6",
