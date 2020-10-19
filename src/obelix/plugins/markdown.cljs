@@ -1,7 +1,6 @@
 (ns obelix.plugins.markdown
   (:require ["remark-parse" :as remark]
             ["remark-rehype" :as remark->rehype]
-            ["rehype-format" :as format]
             ["rehype-stringify" :as html]
             ["unified-stream" :as stream]
             [clojure.string :as s]
@@ -15,7 +14,6 @@
   (-> (unified)
       (.use remark)
       (.use remark->rehype)
-      (.use format)
       (.use html)
       (.processSync content)
       (.toString)))
