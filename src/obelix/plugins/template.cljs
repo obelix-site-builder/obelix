@@ -9,7 +9,8 @@
   [site-data {:keys [type content] :as node}]
   (if (= type :page)
     (assoc node :content (-> content
-                             (handlebars/compile)
+                             (str)
+                             (handlebars/compile #js {:noEscape true})
                              (apply [(handlebars-context site-data node)])))
     node))
 
