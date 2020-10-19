@@ -42,8 +42,12 @@
                                           (list-template? config %)))))
           template (handlebars/compile (str content) #js {:noEscape true})]
       (-> page
-          (assoc :content (template (clj->js {:site (:metadata site-data)
-                                              :pages siblings})))
+          (assoc :content
+                 (template (clj->js {:site (:metadata site-data)
+                                     :pages (map #(-> (:metadata %)
+                                                      (assoc :content (:content %))
+                                                      (assoc :site (:metadata site-data)))
+                                                 siblings)})))
           (assoc :name (path/join (path/dirname name)
                                   (path/basename (path/basename name ".hbs")
                                                  ".handlebars")))))
