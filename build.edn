@@ -1,7 +1,7 @@
 {:output-dir "out"
  :output-to "out/main.js"
- :optimizations :none
- :main obelix.core
+ :optimizations :simple
+ :main obelix.cli
  :target :nodejs
  :install-deps true
  :npm-deps {:handlebars "4.7.6"

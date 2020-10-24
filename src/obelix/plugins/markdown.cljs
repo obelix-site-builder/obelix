@@ -36,7 +36,5 @@
   "Parses Markdown files in the :routes map and turns them into page
   nodes."
   [_config]
-  (fn [handler]
-    (fn [site-map]
-      (let [site-map (handler site-map)]
-        (update site-map :routes (partial map markdown-mapper))))))
+  (fn [site-map]
+    (update site-map :routes (partial map markdown-mapper))))

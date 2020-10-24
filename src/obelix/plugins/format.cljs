@@ -23,7 +23,5 @@
 (defn plugin
   "Formats output files that it knows how to handle."
   [_config]
-  (fn [handler]
-    (fn [site-data]
-      (let [site-data (handler site-data)]
-        (update site-data :routes (partial map format-mapper))))))
+  (fn [site-data]
+    (update site-data :routes (partial map format-mapper))))

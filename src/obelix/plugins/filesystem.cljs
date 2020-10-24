@@ -45,6 +45,5 @@
 (defn plugin
   "Reads raw data from the files in `src` into the site map."
   [{:keys [src]}]
-  (fn [handler]
-    (fn [site-map]
-      (handler (update site-map :routes #(concat % (walk-files src "")))))))
+  (fn [site-map]
+    (update site-map :routes #(concat % (walk-files src "")))))

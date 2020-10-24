@@ -18,9 +18,7 @@
   "Resolves Handlebars templates in the input files, but does not
   apply layout templates."
   [_config]
-  (fn [handler]
-    (fn [site-data]
-      (let [site-data (handler site-data)]
-        (update site-data
-                :routes
-                (partial map (partial template-mapper site-data)))))))
+  (fn [site-data]
+    (update site-data
+            :routes
+            (partial map (partial template-mapper site-data)))))

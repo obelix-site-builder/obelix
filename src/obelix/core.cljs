@@ -29,6 +29,6 @@
   [config]
   (let [plugins (->> (plugin-pipeline config)
                      (reverse)
-                     (apply comp))
-        handler (plugins identity)]
-    (handler {:metadata (into {} (:site-metadata config)) :routes []})))
+                     (apply comp))]
+    (-> (plugins {:metadata (into {} (:site-metadata config)) :routes []})
+        (update :routes doall))))

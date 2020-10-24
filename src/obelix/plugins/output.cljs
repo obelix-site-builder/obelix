@@ -22,9 +22,7 @@
 (defn plugin
   "Writes the site to the output directory `out`."
   [{:keys [out]}]
-  (fn [handler]
-    (fn [site-data]
-      (let [site-data (handler site-data)]
-        (-> site-data
-            (update :routes (partial write-site out))
-            (assoc-in [:metadata :rendered] out))))))
+  (fn [site-data]
+    (-> site-data
+        (update :routes (partial write-site out))
+        (assoc-in [:metadata :rendered] out))))

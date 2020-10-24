@@ -1,4 +1,11 @@
 {
+  "name": "obelix",
+  "version": "0.2.0",
+  "author": "Jeremy Dormitzer <jeremy.dormitzer@gmail.com>",
+  "description": "A static site generator",
+  "bin": {
+    "obelix": "out/main.js"
+  },
   "dependencies": {
     "@cljs-oss/module-deps": "^1.1.1",
     "handlebars": "^4.7.6",
