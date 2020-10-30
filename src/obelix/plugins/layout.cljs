@@ -89,6 +89,7 @@
   are passed a single node."
   [config]
   (fn [site-data]
+    (log/debug "Applying layout templates")
     (let [prefix-map (routes-by-prefix (:routes site-data))]
       (-> site-data
           (update :routes

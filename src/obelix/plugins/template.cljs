@@ -7,6 +7,11 @@
   (log/debug "Generating Handlebars context for" (:name node))
   (clj->js (assoc (:metadata node) :site (:metadata site-data))))
 
+(defn apply-template
+  [template context]
+  (log/debug "Applying template with context" (js->clj context))
+  (template context))
+
 (defn template-mapper
   [site-data {:keys [type content] :as node}]
   (if (= type :page)
@@ -15,7 +20,7 @@
       (assoc node :content (-> content
                                (str)
                                (handlebars/compile #js {:noEscape true})
-                               (apply [(handlebars-context site-data node)]))))
+                               (apply-template (handlebars-context site-data node)))))
     node))
 
 (defn plugin
