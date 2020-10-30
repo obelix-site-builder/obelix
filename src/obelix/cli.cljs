@@ -3,6 +3,7 @@
             [clojure.tools.cli :as cli]
             fs
             [obelix.core :as obelix]
+            [obelix.logging :as logging]
             path
             util))
 
@@ -55,12 +56,14 @@ OPTIONS
 %s" opts-summary))
 
 (def main-opts-spec
-  [["-h" "--help" "Display this help and exit"]])
+  [["-h" "--help" "Display this help and exit"]
+   [nil "--debug" "Enable debug logging"]])
 
 (defn main-cmd
   [args]
   (let [opts (cli/parse-opts args main-opts-spec :in-order true)
         [subcmd & subargs] (:arguments opts)]
+    (logging/configure! {:log-level (when (:debug (:options opts)) :debug)})
     (cond
       (:help (:options opts)) (ok (main-cmd-help (:summary opts)))
       :else (condp = subcmd

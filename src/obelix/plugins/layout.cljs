@@ -1,6 +1,7 @@
 (ns obelix.plugins.layout
   (:require handlebars
-            path))
+            path
+            [taoensso.timbre :as log]))
 
 (def default-layout-templates #{"layout.html.hbs" "layout.html.handlebars"})
 
@@ -37,27 +38,31 @@
   layout for this `page`, apply it."
   [config site-data prefix-map {:keys [name content] :as page}]
   (if (list-template? config page)
-    (let [siblings (->> (get prefix-map (path/dirname name))
-                        (filter #(not (or (layout-template? config %)
-                                          (list-template? config %)))))
-          template (handlebars/compile (str content) #js {:noEscape true})]
-      (-> page
-          (assoc :content
-                 (template (clj->js {:site (:metadata site-data)
-                                     :pages (map #(-> (:metadata %)
-                                                      (assoc :content (:content %))
-                                                      (assoc :site (:metadata site-data)))
-                                                 siblings)})))
-          (assoc :name (path/join (path/dirname name)
-                                  (path/basename (path/basename name ".hbs")
-                                                 ".handlebars")))))
+    (do
+      (log/debug "Rendering list template" name)
+      (let [siblings (->> (get prefix-map (path/dirname name))
+                          (filter #(not (or (layout-template? config %)
+                                            (list-template? config %)))))
+            template (handlebars/compile (str content) #js {:noEscape true})]
+        (-> page
+            (assoc :content
+                   (template (clj->js {:site (:metadata site-data)
+                                       :pages (map #(-> (:metadata %)
+                                                        (assoc :content (:content %))
+                                                        (assoc :site (:metadata site-data)))
+                                                   siblings)})))
+            (assoc :name (path/join (path/dirname name)
+                                    (path/basename (path/basename name ".hbs")
+                                                   ".handlebars"))))))
     (if-let [layout-template (layout-template-for config prefix-map page)]
-      (let [template (handlebars/compile (str (:content layout-template))
-                                         #js {:noEscape true})]
-        (assoc page :content
-               (template (clj->js (-> (:metadata page)
-                                      (assoc :content (:content page))
-                                      (assoc :site (:metadata site-data)))))))
+      (do
+        (log/debug "Applying template" (:name layout-template) "to page" name)
+        (let [template (handlebars/compile (str (:content layout-template))
+                                           #js {:noEscape true})]
+          (assoc page :content
+                 (template (clj->js (-> (:metadata page)
+                                        (assoc :content (:content page))
+                                        (assoc :site (:metadata site-data))))))))
       page)))
 
 (defn routes-by-prefix

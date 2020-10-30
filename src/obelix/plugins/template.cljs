@@ -1,17 +1,21 @@
 (ns obelix.plugins.template
-  (:require handlebars))
+  (:require handlebars
+            [taoensso.timbre :as log]))
 
 (defn handlebars-context
   [site-data node]
+  (log/debug "Generating Handlebars context for" (:name node))
   (clj->js (assoc (:metadata node) :site (:metadata site-data))))
 
 (defn template-mapper
   [site-data {:keys [type content] :as node}]
   (if (= type :page)
-    (assoc node :content (-> content
-                             (str)
-                             (handlebars/compile #js {:noEscape true})
-                             (apply [(handlebars-context site-data node)])))
+    (do
+      (log/debug "Rendering template in" (:name node))
+      (assoc node :content (-> content
+                               (str)
+                               (handlebars/compile #js {:noEscape true})
+                               (apply [(handlebars-context site-data node)]))))
     node))
 
 (defn plugin

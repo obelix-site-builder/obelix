@@ -6,7 +6,8 @@
             [clojure.string :as s]
             fs
             path
-            unified))
+            unified
+            [taoensso.timbre :as log]))
 
 (def md-re #".*(\.md|\.markdown)")
 
@@ -21,15 +22,17 @@
 (defn markdown-mapper
   [{:keys [type name] :as node}]
   (if (and (= type :asset) (re-matches md-re name))
-    (let [content (parse-markdown (:content node))]
-      (-> node
-          (assoc :content content)
-          (assoc :type :page)
-          (assoc :name (str (path/join (path/dirname name)
-                                       (path/basename
-                                        name
-                                        (path/extname name)))
-                            ".html"))))
+    (do
+      (log/debug "Parsing markdown in" name)
+      (let [content (parse-markdown (:content node))]
+        (-> node
+            (assoc :content content)
+            (assoc :type :page)
+            (assoc :name (str (path/join (path/dirname name)
+                                         (path/basename
+                                          name
+                                          (path/extname name)))
+                              ".html")))))
     node))
 
 (defn plugin

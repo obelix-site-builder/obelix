@@ -3,7 +3,8 @@
             ["rehype-stringify" :as stringify]
             path
             rehype
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [taoensso.timbre :as log]))
 
 (defn format-html
   [content]
@@ -17,7 +18,9 @@
 (defn format-mapper
   [page]
   (condp = (path/extname (:name page))
-    ".html" (update page :content format-html)
+    ".html" (do
+              (log/debug "Formatting" (:name page))
+              (update page :content format-html))
     page))
 
 (defn plugin

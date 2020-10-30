@@ -1,11 +1,13 @@
 (ns obelix.plugins.output
   (:require fs
-            path))
+            path
+            [taoensso.timbre :as log]))
 
 (defn write-node
   "Writes a node in the `:routes` map into the `out` directory."
   [out node]
   (let [output-path (path/resolve out (:name node))]
+    (log/debug "Writing output file" output-path)
     (fs/mkdirSync (path/dirname output-path) #js {:recursive true})
     (if (:content node)
       (do (fs/writeFileSync output-path (:content node))
