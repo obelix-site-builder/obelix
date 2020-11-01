@@ -40,4 +40,4 @@
   nodes."
   [_config]
   (fn [site-map]
-    (update site-map :routes (partial map markdown-mapper))))
+    (update site-map :routes (comp doall (partial map markdown-mapper)))))

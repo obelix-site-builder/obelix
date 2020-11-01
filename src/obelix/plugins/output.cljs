@@ -27,5 +27,5 @@
   (fn [site-data]
     (log/debug "Writing output files")
     (-> site-data
-        (update :routes (partial write-site out))
+        (update :routes (comp doall (partial write-site out)))
         (assoc-in [:metadata :rendered] out))))

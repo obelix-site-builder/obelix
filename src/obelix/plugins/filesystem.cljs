@@ -52,4 +52,4 @@
   [{:keys [src]}]
   (fn [site-map]
     (log/debug "Reading source files in" src)
-    (update site-map :routes #(concat % (walk-files src "")))))
+    (update site-map :routes #(concat % (doall (walk-files src ""))))))

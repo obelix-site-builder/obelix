@@ -27,5 +27,5 @@
   "Formats output files that it knows how to handle."
   [_config]
   (fn [site-data]
-    (update site-data :routes (partial map format-mapper))))
     (log/debug "Formatting output files")
+    (update site-data :routes (comp doall(partial map format-mapper)))))

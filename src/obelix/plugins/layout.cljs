@@ -97,11 +97,13 @@
     (let [prefix-map (routes-by-prefix (:routes site-data))]
       (-> site-data
           (update :routes
-                  (partial map
-                           (partial layout-mapper
-                                    config
-                                    site-data
-                                    prefix-map)))
+                  (comp doall
+                        (partial map
+                                 (partial layout-mapper
+                                          config
+                                          site-data
+                                          prefix-map))))
           (update :routes
-                  (partial filter
-                           (complement (partial layout-template? config))))))))
+                  (comp doall
+                        (partial filter
+                                 (complement (partial layout-template? config)))))))))

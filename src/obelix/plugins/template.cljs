@@ -30,4 +30,5 @@
   (fn [site-data]
     (update site-data
             :routes
-            (partial map (partial template-mapper site-data)))))
+            (comp doall
+                  (partial map (partial template-mapper site-data))))))
