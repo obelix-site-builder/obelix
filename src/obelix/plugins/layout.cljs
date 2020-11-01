@@ -26,11 +26,12 @@
   "Returns the layout template that applies to the `page`."
   [config prefix-map page]
   (let [find-layout (fn find-layout [prefix]
-                      (when-let [pages (get prefix-map prefix)]
-                        (or (first (filter #(contains? (layout-templates config)
-                                                       (path/basename (:name %)))
-                                           pages))
-                            (recur (path/dirname prefix)))))]
+                      (when-not (= prefix ".")
+                        (when-let [pages (get prefix-map prefix)]
+                          (or (first (filter #(contains? (layout-templates config)
+                                                         (path/basename (:name %)))
+                                             pages))
+                              (recur (path/dirname prefix))))))]
     (find-layout (path/dirname (:name page)))))
 
 (defn layout-mapper
