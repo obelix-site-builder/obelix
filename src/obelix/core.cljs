@@ -7,7 +7,7 @@
             [obelix.plugins.template :as template]))
 
 (defn built-in-plugins
-  "The build-in plugins run for every build"
+  "The built-in plugins run for every build"
   [config]
   [(filesystem/plugin config)
    (markdown/plugin config)
