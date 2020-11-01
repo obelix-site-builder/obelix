@@ -28,3 +28,4 @@
   [_config]
   (fn [site-data]
     (update site-data :routes (partial map format-mapper))))
+    (log/debug "Formatting output files")

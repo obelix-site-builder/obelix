@@ -25,6 +25,7 @@
 (defn layout-template-for
   "Returns the layout template that applies to the `page`."
   [config prefix-map page]
+  (log/debug "Finding layout template for" (:name page))
   (let [find-layout (fn find-layout [prefix]
                       (when-not (= prefix ".")
                         (when-let [pages (get prefix-map prefix)]
@@ -38,6 +39,7 @@
   "If the `page` is a list template, render it. If there is a template
   layout for this `page`, apply it."
   [config site-data prefix-map {:keys [name content] :as page}]
+  (log/debug "Considering layouts for" name)
   (if (list-template? config page)
     (do
       (log/debug "Rendering list template" name)
@@ -72,6 +74,7 @@
   becomes {\"foo/bar\" [\"foo/bar/baz.md\" \"foo/bar/qux.md\"]}. This
   will let me look up files based on which directories they are in."
   [routes]
+  (log/debug "Generating prefix map")
   (reduce (fn [prefix-map page]
             (let [prefix (path/dirname (:name page))]
               (assoc prefix-map
