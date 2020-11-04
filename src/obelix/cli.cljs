@@ -5,6 +5,7 @@
             [obelix.core :as obelix]
             [obelix.logging :as logging]
             path
+            [taoensso.timbre :as log]
             util))
 
 (defn error [msg]
@@ -44,7 +45,8 @@ OPTIONS
       (:help (:options opts)) (ok (build-cmd-help (:summary opts)))
       :else (let [config (read-config (:config (:options opts)))]
               (obelix/build config)
-              (ok (util/format "Built site to %s" (:out config)))))))
+              (log/info "Built site to" (:out config))
+              0))))
 
 (defn main-cmd-help [opts-summary]
   (util/format "Usage: obelix [OPTIONS] SUBCOMMAND
