@@ -27,20 +27,26 @@
   [config prefix-map page]
   (log/debug "Finding layout template for" (:name page))
   (let [find-layout (fn find-layout [prefix]
-                      (when-not (= prefix ".")
-                        (when-let [pages (get prefix-map prefix)]
-                          (or (first (filter #(contains? (layout-templates config)
-                                                         (path/basename (:name %)))
-                                             pages))
-                              (recur (path/dirname prefix))))))]
-    (find-layout (path/dirname (:name page)))))
+                      (let [pages (get prefix-map prefix)
+                            layout (first (filter #(contains? (layout-templates config)
+                                                              (path/basename (:name %)))
+                                                  pages))]
+                        (if (or layout (= prefix "."))
+                          layout
+                          (recur (path/dirname prefix)))))
+        layout (find-layout (path/dirname (:name page)))]
+    (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
+    layout))
 
 (defn layout-mapper
   "If the `page` is a list template, render it. If there is a template
   layout for this `page`, apply it."
   [config site-data prefix-map {:keys [name content] :as page}]
   (log/debug "Considering layouts for" name)
-  (if (list-template? config page)
+  (cond
+    (not= (:type page) :page) page
+    (layout-template? config page) page
+    (list-template? config page)
     (do
       (log/debug "Rendering list template" name)
       (let [siblings (->> (get prefix-map (path/dirname name))
@@ -57,16 +63,16 @@
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
                                                    ".handlebars"))))))
-    (if-let [layout-template (layout-template-for config prefix-map page)]
-      (do
-        (log/debug "Applying template" (:name layout-template) "to page" name)
-        (let [template (handlebars/compile (str (:content layout-template))
-                                           #js {:noEscape true})]
-          (assoc page :content
-                 (template (clj->js (-> (:metadata page)
-                                        (assoc :content (:content page))
-                                        (assoc :site (:metadata site-data))))))))
-      page)))
+    :else (if-let [layout-template (layout-template-for config prefix-map page)]
+            (do
+              (log/debug "Applying layout template" (:name layout-template) "to page" name)
+              (let [template (handlebars/compile (str (:content layout-template))
+                                                 #js {:noEscape true})]
+                (assoc page :content
+                       (template (clj->js (-> (:metadata page)
+                                              (assoc :content (:content page))
+                                              (assoc :site (:metadata site-data))))))))
+            page)))
 
 (defn routes-by-prefix
   "Transforms the routes list into a map keyed by directory prefix,
