@@ -14,8 +14,8 @@
 (defn parse-markdown [content]
   (-> (unified)
       (.use remark)
-      (.use remark->rehype)
-      (.use html)
+      (.use remark->rehype #js {:allowDangerousHtml true})
+      (.use html #js {:allowDangerousHtml true})
       (.processSync content)
       (.toString)))
 
