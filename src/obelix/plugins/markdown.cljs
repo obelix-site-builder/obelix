@@ -21,13 +21,12 @@
 
 (defn markdown-mapper
   [{:keys [type name] :as node}]
-  (if (and (= type :asset) (re-matches md-re name))
+  (if (and (= type :page) (re-matches md-re name))
     (do
       (log/debug "Parsing markdown in" name)
       (let [content (parse-markdown (:content node))]
         (-> node
             (assoc :content content)
-            (assoc :type :page)
             (assoc :name (str (path/join (path/dirname name)
                                          (path/basename
                                           name

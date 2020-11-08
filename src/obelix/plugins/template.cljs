@@ -1,5 +1,6 @@
 (ns obelix.plugins.template
   (:require handlebars
+            [obelix.plugins.layout :as layout]
             [taoensso.timbre :as log]))
 
 (defn handlebars-context
@@ -13,8 +14,10 @@
   (template context))
 
 (defn template-mapper
-  [site-data {:keys [type content] :as node}]
-  (if (= type :page)
+  [config site-data {:keys [type content] :as node}]
+  (if (and (= type :page)
+           (not (layout/list-template? config node))
+           (not (layout/layout-template? config node)))
     (do
       (log/debug "Rendering template in" (:name node))
       (assoc node :content (-> content
@@ -26,9 +29,9 @@
 (defn plugin
   "Resolves Handlebars templates in the input files, but does not
   apply layout templates."
-  [_config]
+  [config]
   (fn [site-data]
     (update site-data
             :routes
             (comp doall
-                  (partial map (partial template-mapper site-data))))))
+                  (partial map (partial template-mapper config site-data))))))

@@ -27,10 +27,13 @@
                                       frontmatter-end)
                            (.toString "utf-8")
                            (yaml/safeLoad)
-                           (js->clj :keywordize-keys true))})
+                           (js->clj :keywordize-keys true))
+             :type :page})
           {:content content
+           :type :asset
            :metadata {}}))
       {:content content
+       :type :asset
        :metadata {}})))
 
 (defn walk-files
@@ -44,7 +47,6 @@
                                   (map (partial path/resolve path)
                                        (fs/readdirSync path)))
       (.isFile stat) [(assoc (content-and-frontmatter path)
-                             :type :asset
                              :name (path/relative src path))])))
 
 (defn plugin

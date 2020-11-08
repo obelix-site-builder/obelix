@@ -38,20 +38,16 @@
     (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
     layout))
 
-(defn layout-mapper
-  "If the `page` is a list template, render it. If there is a template
-  layout for this `page`, apply it."
+(defn list-template-mapper
   [config site-data prefix-map {:keys [name content] :as page}]
-  (log/debug "Considering layouts for" name)
-  (cond
-    (not= (:type page) :page) page
-    (layout-template? config page) page
-    (list-template? config page)
+  (if (list-template? config page)
     (do
       (log/debug "Rendering list template" name)
       (let [siblings (->> (get prefix-map (path/dirname name))
-                          (filter #(not (or (layout-template? config %)
-                                            (list-template? config %)))))
+                          (filter #(and
+                                    (= (:type %) :page)
+                                    (not (or (layout-template? config %)
+                                             (list-template? config %))))))
             template (handlebars/compile (str content) #js {:noEscape true})]
         (-> page
             (assoc :content
@@ -63,6 +59,16 @@
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
                                                    ".handlebars"))))))
+    page))
+
+(defn layout-mapper
+  "If the `page` is a list template, render it. If there is a template
+  layout for this `page`, apply it."
+  [config site-data prefix-map {:keys [name content] :as page}]
+  (log/debug "Considering layouts for" name)
+  (cond
+    (not= (:type page) :page) page
+    (layout-template? config page) page
     :else (if-let [layout-template (layout-template-for config prefix-map page)]
             (do
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
@@ -70,7 +76,7 @@
                                                  #js {:noEscape true})]
                 (assoc page :content
                        (template (clj->js (-> (:metadata page)
-                                              (assoc :content (:content page))
+                                              (assoc :content content)
                                               (assoc :site (:metadata site-data))))))))
             page)))
 
@@ -104,12 +110,15 @@
       (-> site-data
           (update :routes
                   (comp doall
+                        (partial filter
+                                 (complement (partial layout-template? config)))
                         (partial map
                                  (partial layout-mapper
                                           config
                                           site-data
-                                          prefix-map))))
-          (update :routes
-                  (comp doall
-                        (partial filter
-                                 (complement (partial layout-template? config)))))))))
+                                          prefix-map))
+                        (partial map
+                                 (partial list-template-mapper
+                                          config
+                                          site-data
+                                          prefix-map))))))))
