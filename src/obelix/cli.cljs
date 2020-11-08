@@ -65,7 +65,7 @@ OPTIONS
   [args]
   (let [opts (cli/parse-opts args main-opts-spec :in-order true)
         [subcmd & subargs] (:arguments opts)]
-    (logging/configure! {:log-level (when (:debug (:options opts)) :debug)})
+    (logging/configure! {:log-level (if (:debug (:options opts)) :debug :info)})
     (cond
       (:help (:options opts)) (ok (main-cmd-help (:summary opts)))
       :else (condp = subcmd
