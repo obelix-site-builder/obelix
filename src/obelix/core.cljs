@@ -4,13 +4,15 @@
             [obelix.plugins.layout :as layout]
             [obelix.plugins.markdown :as markdown]
             [obelix.plugins.output :as output]
-            [obelix.plugins.template :as template]))
+            [obelix.plugins.template :as template]
+            [obelix.plugins.url :as url]))
 
 (defn built-in-plugins
   "The built-in plugins run for every build"
   [config]
   [(filesystem/plugin config)
    (markdown/plugin config)
+   (url/plugin config)
    (template/plugin config)
    (layout/plugin config)
    (format/plugin config)
