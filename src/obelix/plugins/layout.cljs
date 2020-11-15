@@ -95,14 +95,8 @@
           {}
           routes))
 
-(defn plugin
-  "Applies layout templates.
-
-  Templates are files with a .hbs or .handlebars extension. Template
-  type is determined from the template metadata - list type templates
-  receive all nodes at the same directory level as them as an
-  argument, while single type templates apply to individual posts and
-  are passed a single node."
+(defn layout-plugin
+  "Applies layout templates."
   [config]
   (fn [site-data]
     (log/debug "Applying layout templates")
@@ -116,9 +110,18 @@
                                  (partial layout-mapper
                                           config
                                           site-data
-                                          prefix-map))
-                        (partial map
-                                 (partial list-template-mapper
-                                          config
-                                          site-data
                                           prefix-map))))))))
+
+(defn list-template-plugin
+  "Generates list templates."
+  [config]
+  (fn [site-data]
+    (let [prefix-map (routes-by-prefix (:routes site-data))]
+      (update site-data
+              :routes
+              (comp doall
+                    (partial map
+                             (partial list-template-mapper
+                                      config
+                                      site-data
+                                      prefix-map)))))))

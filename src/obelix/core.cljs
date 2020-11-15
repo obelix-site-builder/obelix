@@ -14,7 +14,8 @@
    (markdown/plugin config)
    (url/plugin config)
    (template/plugin config)
-   (layout/plugin config)
+   (layout/layout-plugin config)
+   (layout/list-template-plugin config)
    (format/plugin config)
    (output/plugin config)])
 
