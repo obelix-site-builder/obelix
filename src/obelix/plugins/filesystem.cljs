@@ -28,12 +28,12 @@
                            (.toString "utf-8")
                            (yaml/safeLoad)
                            (js->clj :keywordize-keys true))
-             :type :page})
+             :type "page"})
           {:content content
-           :type :asset
+           :type "asset"
            :metadata {}}))
       {:content content
-       :type :asset
+       :type "asset"
        :metadata {}})))
 
 (defn walk-files

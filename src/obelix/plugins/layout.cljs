@@ -45,7 +45,7 @@
       (log/debug "Rendering list template" name)
       (let [siblings (->> (get prefix-map (path/dirname name))
                           (filter #(and
-                                    (= (:type %) :page)
+                                    (= (:type %) "page")
                                     (not (or (layout-template? config %)
                                              (list-template? config %))))))
             template (handlebars/compile (str content) #js {:noEscape true})]
@@ -67,7 +67,7 @@
   [config site-data prefix-map {:keys [name content] :as page}]
   (log/debug "Considering layouts for" name)
   (cond
-    (not= (:type page) :page) page
+    (not= (:type page) "page") page
     (layout-template? config page) page
     :else (if-let [layout-template (layout-template-for config prefix-map page)]
             (do

@@ -2,7 +2,7 @@
 
 (defn url-mapper
   [node]
-  (if (= (:type node) :page)
+  (if (= (:type node) "page")
     (assoc-in node [:metadata :url] (str "/" (:name node)))
     node))
 
