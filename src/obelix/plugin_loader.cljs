@@ -25,7 +25,7 @@
                         (try
                           (js/require name)
                           (catch js/Error _e)))]
-    (js->clj (plugin config) :keywordize-keys true)))
+    (js->clj (plugin (clj->js config)) :keywordize-keys true)))
 
 (defn load-plugins
   [config]
