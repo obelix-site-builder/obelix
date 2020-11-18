@@ -1,6 +1,6 @@
 {
   "name": "obelix",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Jeremy Dormitzer <jeremy.dormitzer@gmail.com>",
   "description": "A static site generator",
   "bin": {
