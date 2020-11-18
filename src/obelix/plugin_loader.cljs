@@ -23,6 +23,9 @@
                           (js/require (path/resolve "plugins" name))
                           (catch js/Error _e))
                         (try
+                          (js/require (path/resolve "node_modules" name))
+                          (catch js/Error _e))
+                        (try
                           (js/require name)
                           (catch js/Error _e)))]
     (js->clj (plugin (clj->js config)) :keywordize-keys true)))
