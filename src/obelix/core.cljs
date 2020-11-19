@@ -1,5 +1,6 @@
 (ns obelix.core
-  (:require [obelix.plugin-loader :as plugins]
+  (:require [obelix.handlebars :as hb]
+            [obelix.plugin-loader :as plugins]
             [obelix.plugins.filesystem :as filesystem]
             [obelix.plugins.format :as format]
             [obelix.plugins.layout :as layout]
@@ -27,6 +28,7 @@
 (defn build
   "Builds the static site configured via `config`."
   [config]
+  (hb/register-helpers! config)
   (let [plugins (plugins/load-plugins config)
         handlers (->> (plugin-pipeline plugins config)
                       (reverse)
