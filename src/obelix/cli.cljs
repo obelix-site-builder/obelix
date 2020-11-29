@@ -57,7 +57,7 @@ OPTIONS
                                 (util/format "Detected change for %s, rebuilding site" path))
                                (obelix/build config)
                                (log/info "Built site to" (:out config))))
-              (watcher/live-reload (:out config))
+              (watcher/live-reload (:src config) #(log/info "Live reloading enabled"))
               (log/info "Watching" (:src config) "for changes")
               (obelix/build config)
               (log/info "Built site to" (:out config))

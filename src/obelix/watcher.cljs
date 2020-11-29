@@ -9,6 +9,8 @@
     (.on watcher "all" callback)))
 
 (defn live-reload
-  [dir]
-  (let [server (livereload/createServer)]
+  [dir callback]
+  (let [server (livereload/createServer
+                #js {:delay 1000}
+                callback)]
     (.watch server (path/resolve dir))))
