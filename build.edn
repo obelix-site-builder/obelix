@@ -4,8 +4,12 @@
  :main obelix.cli
  :target :nodejs
  :install-deps true
- :npm-deps {:handlebars "4.7.6"
+ :npm-deps {:chokidar "3.4.3"
+            :connect-livereload "0.6.1"
+            :express "4.17.1"
+            :handlebars "4.7.6"
             :js-yaml "3.14.0"
+            :livereload "0.9.1"
             :rehype "11.0.0"
             :rehype-format "3.1.0"
             :rehype-stringify "8.0.0"
