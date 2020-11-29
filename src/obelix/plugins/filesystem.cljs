@@ -2,7 +2,8 @@
   (:require ["js-yaml" :as yaml]
             fs
             path
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            util))
 
 (def frontmatter-marker "---\n")
 
@@ -40,9 +41,15 @@
   "Transforms the files in `src` into a routes list."
   [src path]
   (let [path (path/resolve src path)
-        stat (fs/statSync path)]
+        stat (try
+               (fs/statSync path)
+               (catch js/Error e e))]
     (log/debug "Walking" path)
     (cond
+      (instance? js/Error stat)
+      (do
+        (log/warn (util/format "Error accessing file: %s" (.-message stat)))
+        [])
       (.isDirectory stat) (mapcat (partial walk-files src)
                                   (map (partial path/resolve path)
                                        (fs/readdirSync path)))
