@@ -23,7 +23,7 @@
               (let [content-key (if (:renderedContent page)
                                   :renderedContent
                                   :content)]
-                (update page :content format-html)))
+                (update page content-key format-html)))
     page))
 
 (defn plugin
