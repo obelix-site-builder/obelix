@@ -46,17 +46,18 @@
                           (list-template? config %)))))
        (map #(-> (:metadata %)
                  (assoc :content (:content %))
+                 (assoc :renderedContent (:renderedContent %))
                  (assoc :site (:metadata site-data))))))
 
 (defn list-template-mapper
-  [config site-data prefix-map {:keys [name content] :as page}]
+  [config site-data prefix-map {:keys [name renderedContent content] :as page}]
   (if (list-template? config page)
     (do
       (log/debug "Rendering list template" name)
       (let [pages (get-list-pages config site-data prefix-map name)
-            template (handlebars/compile (str content))]
+            template (handlebars/compile (str (or renderedContent content)))]
         (-> page
-            (assoc :content
+            (assoc :renderedContent
                    (template (clj->js {:site (:metadata site-data)
                                        :pages pages})))
             (assoc :name (path/join (path/dirname name)
@@ -65,8 +66,7 @@
     page))
 
 (defn layout-mapper
-  "If the `page` is a list template, render it. If there is a template
-  layout for this `page`, apply it."
+  "If there is a template layout for this `page`, apply it."
   [config site-data prefix-map {:keys [name content] :as page}]
   (log/debug "Considering layouts for" name)
   (cond
@@ -76,7 +76,7 @@
             (do
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
               (let [template (handlebars/compile (str (:content layout-template)))]
-                (assoc page :content
+                (assoc page :renderedContent
                        (template (clj->js (-> (:metadata page)
                                               (assoc :content content)
                                               (assoc :site (:metadata site-data))))))))

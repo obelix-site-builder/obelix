@@ -9,10 +9,11 @@
   (let [output-path (path/resolve out (:name node))]
     (log/debug "Writing output file" output-path)
     (fs/mkdirSync (path/dirname output-path) #js {:recursive true})
-    (if (:content node)
-      (do (fs/writeFileSync output-path (:content node))
-          (assoc-in node [:metadata :rendered] output-path))
-      node)))
+    (let [content (or (:renderedContent node) (:content node))]
+      (if content
+        (do (fs/writeFileSync output-path content)
+            (assoc-in node [:metadata :rendered] output-path))
+        node))))
 
 (defn write-site
   "Writes the site in `routes` to the `out` directory."
