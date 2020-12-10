@@ -38,24 +38,27 @@
     (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
     layout))
 
+(defn get-list-pages [config site-data prefix-map template-name]
+  (->> (get prefix-map (path/dirname template-name))
+       (filter #(and
+                 (= (:type %) "page")
+                 (not (or (layout-template? config %)
+                          (list-template? config %)))))
+       (map #(-> (:metadata %)
+                 (assoc :content (:content %))
+                 (assoc :site (:metadata site-data))))))
+
 (defn list-template-mapper
   [config site-data prefix-map {:keys [name content] :as page}]
   (if (list-template? config page)
     (do
       (log/debug "Rendering list template" name)
-      (let [siblings (->> (get prefix-map (path/dirname name))
-                          (filter #(and
-                                    (= (:type %) "page")
-                                    (not (or (layout-template? config %)
-                                             (list-template? config %))))))
-            template (handlebars/compile (str content) #js {:noEscape true})]
+      (let [pages (get-list-pages config site-data prefix-map name)
+            template (handlebars/compile (str content))]
         (-> page
             (assoc :content
                    (template (clj->js {:site (:metadata site-data)
-                                       :pages (map #(-> (:metadata %)
-                                                        (assoc :content (:content %))
-                                                        (assoc :site (:metadata site-data)))
-                                                   siblings)})))
+                                       :pages pages})))
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
                                                    ".handlebars"))))))
@@ -72,8 +75,7 @@
     :else (if-let [layout-template (layout-template-for config prefix-map page)]
             (do
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
-              (let [template (handlebars/compile (str (:content layout-template))
-                                                 #js {:noEscape true})]
+              (let [template (handlebars/compile (str (:content layout-template)))]
                 (assoc page :content
                        (template (clj->js (-> (:metadata page)
                                               (assoc :content content)

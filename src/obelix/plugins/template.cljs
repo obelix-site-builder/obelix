@@ -22,7 +22,7 @@
       (log/debug "Rendering template in" (:name node))
       (assoc node :content (-> content
                                (str)
-                               (handlebars/compile #js {:noEscape true})
+                               (handlebars/compile)
                                (apply-template (handlebars-context site-data node)))))
     node))
 
