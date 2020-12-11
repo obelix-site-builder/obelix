@@ -3,5 +3,4 @@
 /.nrepl-port
 /node_modules/
 /out/
-/docs
 /.clj-kondo/
