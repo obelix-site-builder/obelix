@@ -18,14 +18,25 @@
   (println msg)
   0)
 
+(defn parse-json
+  [json]
+  (-> (.parse js/JSON json)
+      (js->clj :keywordize-keys true)))
+
 (defn read-config
   [file]
-  ;; TODO support JSON config file as well
-  (-> (fs/readFileSync file "utf-8")
-      (edn/read-string)))
+  (let [contents (fs/readFileSync file "utf-8")]
+    (condp = (path/extname file)
+      ".edn" (edn/read-string contents)
+      ".json" (parse-json contents))))
 
 (defn default-config []
-  (path/resolve "obelix.edn"))
+  (let [json-config (path/resolve "obelix.json")
+        edn-config (path/resolve "obelix.edn")]
+    (cond
+      (fs/existsSync json-config) json-config
+      (fs/existsSync edn-config) edn-config
+      :else json-config)))
 
 (defn serve-cmd-help [opts-summary]
   (util/format "Usage: obelix serve [OPTIONS]
