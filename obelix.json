@@ -1,4 +1,10 @@
 {
     "src": "docs-src",
-    "out": "docs"
+    "out": "docs",
+    "plugins": {
+        "obelix-plugin-typography": {
+            "fileName": "css/typography.css",
+            "theme": "typography-theme-us-web-design-standards"
+        }
+    }
 }

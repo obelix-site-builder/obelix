@@ -24,5 +24,9 @@
     "unified": "^9.0.0",
     "unified-stream": "^1.0.6",
     "vfile": "^4.2.0"
+  },
+  "devDependencies": {
+    "obelix-plugin-typography": "^1.0.2",
+    "typography-theme-us-web-design-standards": "^0.16.19"
   }
 }
