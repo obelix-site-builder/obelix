@@ -1,5 +1,6 @@
 (ns obelix.plugins.layout
-  (:require handlebars
+  (:require [clojure.set :as set]
+            handlebars
             path
             [taoensso.timbre :as log]))
 
@@ -9,31 +10,45 @@
   [config]
   (set (or (:layout-templates config) default-layout-templates)))
 
+(defn all-layout-templates
+  "All layout templates including custom ones"
+  [config pages]
+  (set/union (layout-templates config)
+             (set
+              (filter (complement nil?)
+                      (map (comp :template :metadata)
+                           pages)))))
+
 (defn layout-template?
   "Predicate that returns `true` if the `page` is a layout template
   that should not be rendered on its own."
-  [config page]
-  (contains? (layout-templates config) (path/basename (:name page))))
+  [config pages page]
+  (contains? (all-layout-templates config pages) (path/basename (:name page))))
 
 (defn list-template?
   "Predicate to detect list templates: any Handlebars file that is not
   a layout template."
-  [config page]
-  (and (not (layout-template? config page))
+  [config pages page]
+  (and (not (layout-template? config pages page))
        (contains? #{".hbs" ".handlebars"} (path/extname (:name page)))))
 
 (defn layout-template-for
   "Returns the layout template that applies to the `page`."
   [config prefix-map page]
   (log/debug "Finding layout template for" (:name page))
-  (let [find-layout (fn find-layout [prefix]
-                      (let [pages (get prefix-map prefix)
-                            layout (first (filter #(contains? (layout-templates config)
-                                                              (path/basename (:name %)))
-                                                  pages))]
-                        (if (or layout (= prefix "."))
-                          layout
-                          (recur (path/dirname prefix)))))
+  (let [find-layout
+        (fn find-layout [prefix]
+          (let [layout-templates (if (contains? (:metadata page) :template)
+                                   #{(:template (:metadata page))}
+                                   (layout-templates config))
+                pages (get prefix-map prefix)
+                layout (first (filter #(contains?
+                                        layout-templates
+                                        (path/basename (:name %)))
+                                      pages))]
+            (if (or layout (= prefix "."))
+              layout
+              (recur (path/dirname prefix)))))
         layout (find-layout (path/dirname (:name page)))]
     (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
     layout))
@@ -42,8 +57,8 @@
   (->> (get prefix-map (path/dirname template-name))
        (filter #(and
                  (= (:type %) "page")
-                 (not (or (layout-template? config %)
-                          (list-template? config %)))))
+                 (not (or (layout-template? config (:routes site-data) %)
+                          (list-template? config (:routes site-data) %)))))
        (map #(-> (:metadata %)
                  (assoc :content (:content %))
                  (assoc :renderedContent (:renderedContent %))
@@ -51,7 +66,7 @@
 
 (defn list-template-mapper
   [config site-data prefix-map {:keys [name renderedContent content] :as page}]
-  (if (list-template? config page)
+  (if (list-template? config (:routes site-data) page)
     (do
       (log/debug "Rendering list template" name)
       (let [pages (get-list-pages config site-data prefix-map name)
@@ -71,7 +86,7 @@
   (log/debug "Considering layouts for" name)
   (cond
     (not= (:type page) "page") page
-    (layout-template? config page) page
+    (layout-template? config (:routes site-data) page) page
     :else (if-let [layout-template (layout-template-for config prefix-map page)]
             (do
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
@@ -107,7 +122,9 @@
           (update :routes
                   (comp doall
                         (partial filter
-                                 (complement (partial layout-template? config)))
+                                 (complement (partial layout-template?
+                                                      config
+                                                      (:routes site-data))))
                         (partial map
                                  (partial layout-mapper
                                           config

@@ -16,8 +16,8 @@
 (defn template-mapper
   [config site-data {:keys [type content] :as node}]
   (if (and (= type "page")
-           (not (layout/list-template? config node))
-           (not (layout/layout-template? config node)))
+           (not (layout/list-template? config (:routes site-data) node))
+           (not (layout/layout-template? config (:routes site-data) node)))
     (do
       (log/debug "Rendering template in" (:name node))
       (assoc node :content (-> content
