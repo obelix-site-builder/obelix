@@ -20,10 +20,7 @@
   (condp = (path/extname (:name page))
     ".html" (do
               (log/debug "Formatting" (:name page))
-              (let [content-key (if (:renderedContent page)
-                                  :renderedContent
-                                  :content)]
-                (update page content-key format-html)))
+              (update page :content format-html))
     page))
 
 (defn plugin

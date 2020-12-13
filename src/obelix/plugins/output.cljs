@@ -9,7 +9,7 @@
   (let [output-path (path/resolve out (:name node))]
     (log/debug "Writing output file" output-path)
     (fs/mkdirSync (path/dirname output-path) #js {:recursive true})
-    (let [content (or (:renderedContent node) (:content node))]
+    (let [content (:content node)]
       (if content
         (do (fs/writeFileSync output-path content)
             (assoc-in node [:metadata :rendered] output-path))

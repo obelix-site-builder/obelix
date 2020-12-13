@@ -61,7 +61,6 @@
                           (list-template? config (:routes site-data) %)))))
        (map #(-> (:metadata %)
                  (assoc :content (:content %))
-                 (assoc :renderedContent (:renderedContent %))
                  (assoc :site (:metadata site-data))))))
 
 (defn list-template-mapper
@@ -72,7 +71,7 @@
       (let [pages (get-list-pages config site-data prefix-map name)
             template (handlebars/compile (str (or renderedContent content)))]
         (-> page
-            (assoc :renderedContent
+            (assoc :content
                    (template (clj->js {:site (:metadata site-data)
                                        :pages pages})))
             (assoc :name (path/join (path/dirname name)
@@ -91,7 +90,7 @@
             (do
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
               (let [template (handlebars/compile (str (:content layout-template)))]
-                (assoc page :renderedContent
+                (assoc page :content
                        (template (clj->js (-> (:metadata page)
                                               (assoc :content content)
                                               (assoc :site (:metadata site-data))))))))
