@@ -1,5 +1,6 @@
 (ns obelix.plugins.layout
   (:require [clojure.set :as set]
+            [clojure.string :as s]
             handlebars
             path
             [taoensso.timbre :as log]))
@@ -53,6 +54,38 @@
     (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
     layout))
 
+(defn site-pages
+  "Returns all pages in the site formatted for Handlebars
+  consumption.
+
+  Returns a hybrid array of pages with attributes for
+  subdirectories. For example, if the site has top-level pages `a` and `b`
+  and a subdirectory `blog` with pages `c` and `d`, the returned
+  object would be an array with two items, `a` and `b`, and an
+  attribute `blog` which would be another hybrid array containing `c`
+  and `d`."
+  [site-data]
+  (let [pages #js []
+        push-at-path! (fn push-at-path! [[first-path & rest-path] pages page]
+                        (if (nil? first-path)
+                          (.push pages (-> (:metadata page)
+                                           (assoc :content (:content page))
+                                           (clj->js)))
+                          (do
+                            (when (nil? (aget pages first-path))
+                              (aset pages first-path #js []))
+                            (push-at-path! rest-path
+                                           (aget pages first-path)
+                                           page))))]
+    (doseq [page (:routes site-data)]
+      (when (= (:type page) "page")
+        (let [page-path (-> (path/dirname (:name page))
+                            (s/replace #"^\." "")
+                            (s/split path/sep)
+                            (#(filter (complement s/blank?) %)))]
+          (push-at-path! page-path pages page))))
+    pages))
+
 (defn get-list-pages [config site-data prefix-map template-name]
   (->> (get prefix-map (path/dirname template-name))
        (filter #(and
@@ -61,7 +94,8 @@
                           (list-template? config (:routes site-data) %)))))
        (map #(-> (:metadata %)
                  (assoc :content (:content %))
-                 (assoc :site (:metadata site-data))))))
+                 (assoc :site (assoc (:metadata site-data)
+                                     :pages (site-pages site-data)))))))
 
 (defn list-template-mapper
   [config site-data prefix-map {:keys [name renderedContent content] :as page}]
@@ -72,7 +106,8 @@
             template (handlebars/compile (str (or renderedContent content)))]
         (-> page
             (assoc :content
-                   (template (clj->js {:site (:metadata site-data)
+                   (template (clj->js {:site (assoc (:metadata site-data)
+                                                    :pages (site-pages site-data))
                                        :pages pages})))
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
@@ -93,7 +128,9 @@
                 (assoc page :content
                        (template (clj->js (-> (:metadata page)
                                               (assoc :content content)
-                                              (assoc :site (:metadata site-data))))))))
+                                              (assoc :site
+                                                     (assoc (:metadata site-data)
+                                                            :pages (site-pages site-data)))))))))
             page)))
 
 (defn routes-by-prefix
