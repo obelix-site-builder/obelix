@@ -63,7 +63,7 @@ OPTIONS
       (:help (:options opts)) (ok (serve-cmd-help (:summary opts)))
       :else (let [config (read-config (:config (:options opts)))]
               (watcher/watch (:src config)
-                             (fn [event path]
+                             (fn [_event path]
                                (log/info
                                 (util/format "Detected change for %s, rebuilding site" path))
                                (obelix/build config)

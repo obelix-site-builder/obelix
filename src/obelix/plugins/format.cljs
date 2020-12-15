@@ -1,4 +1,7 @@
 (ns obelix.plugins.format
+  {:clj-kondo/config
+   '{:linters
+     {:unresolved-symbol {:exclude [rehype]}}}}
   (:require ["rehype-format" :as format]
             ["rehype-stringify" :as stringify]
             path

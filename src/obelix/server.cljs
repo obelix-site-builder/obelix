@@ -1,4 +1,7 @@
 (ns obelix.server
+  {:clj-kondo/config
+   '{:linters
+     {:unresolved-symbol {:exclude [express]}}}}
   (:require ["connect-livereload" :as livereload]
             express
             http

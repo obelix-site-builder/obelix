@@ -1,9 +1,10 @@
 (ns obelix.plugins.markdown
+  {:clj-kondo/config
+   '{:linters
+     {:unresolved-symbol {:exclude [unified]}}}}
   (:require ["remark-parse" :as remark]
             ["remark-rehype" :as remark->rehype]
             ["rehype-stringify" :as html]
-            ["unified-stream" :as stream]
-            [clojure.string :as s]
             fs
             path
             unified
