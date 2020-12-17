@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/clojure:tools-deps-1.10.1.478
+      - image: circleci/clojure:tools-deps-1.10.1.708-node
     steps:
       - checkout
       - run: clojure -A:lint
