@@ -6,3 +6,4 @@ jobs:
     steps:
       - checkout
       - run: clojure -A:lint
+      - run: clojure -A:test

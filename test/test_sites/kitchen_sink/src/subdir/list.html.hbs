@@ -1,0 +1,20 @@
+<h1>Top-level</h1>
+<ul>
+    {{#each site.pages}}
+        <li>{{ url }}</li>
+    {{/each}}
+</ul>
+
+<h1>Subdirectory</h1>
+<ul>
+    {{#each (lookup site.pages "subdir")}}
+        <li>{{ url }}</li>
+    {{/each}}
+</ul>
+
+<h1>Sub-subdirectory</h1>
+<ul>
+    {{#each site.pages.subdir.subsubdir}}
+        <li>{{ url }}</li>
+    {{/each}}
+</ul>
