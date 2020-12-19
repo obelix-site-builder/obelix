@@ -9,7 +9,7 @@
 
 (defn layout-templates
   [config]
-  (set (or (:layout-templates config) default-layout-templates)))
+  (set (or (:layoutTemplates config) default-layout-templates)))
 
 (defn all-layout-templates
   "All layout templates including custom ones"
