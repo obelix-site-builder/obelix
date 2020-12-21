@@ -166,6 +166,44 @@ Note the use of triple curly braces in `\{{{ content }}}`. This tells Handlebars
 ## List templates
 A list template is like a layout template, but instead of being passed a single page it gets passed a list of pages. List templates can be used to generate index pages, RSS feeds, or any other collection of content. A list template is simply any file with a `.hbs` or `.handlebars` file extension that isn't a layout template. Unless you have the `"layoutTemplates"` configuration option set, this means that any `.hbs` or `.handlebars` file that isn't named `layout.html.hbs`, `layout.html.handlebars`, or is the target of a `template` page metadata will be treated as a list template.
 
+List templates get passed an array of all pages in the same directory as them as the `pages` variable. Each item in this list is a `page` object that the one that gets passed to layout templates - it will have a `content` key containing the page content in addition to any keys in the page frontmatter. The `pages` array can be iterated over using the [Handlebars `each` helper](https://handlebarsjs.com/guide/builtin-helpers.html#each):
+
+```html
+<html>
+    <body>
+      \{{#each pages}}
+          <h1>\{{ title }}</h1>
+          {{{ content }}}
+      \{{/each}}
+    </body>
+</html>
+```
+
+If you want to iterate over pages that aren't in the same directory as the list template, you can use the `site.pages` variable. This variable is a nested array of all pages in the site. The format of `site.pages` is a little weird: it's a recursive array that can be iterated over to access the pages in the top-level directories, but exposes subdirectories as attributes on that array with values that are themselves recursive arrays. For example, given the following site structure:
+
+```
+.
+├── index.md
+├── about.md
+└── blog
+    ├── post1.md
+    └── post2.md
+```
+
+The `site.pages` variable would be an array containing `index.md` and `about.md`, and `site.pages.blog` would be an array containing `post1.md` and `post2.md`.
+
+If you have a directory whose name isn't a valid JavaScript identifier, you can access it using index notation, e.g. `site.pages["My weird folder"]`. Although this layout is a bit unconventional, it makes it convenient to loop through pages using the `\{{each}}` helper at any level in the directory structure.
+
+List templates can be either `page` or `asset` sources. If you include a frontmatter block in a list template, it will be treated as a `page` and have layout templates applied to it. If not, it will be treated as an `asset` and layout templates will not be applied to it.
+
 ## Custom Handlebars helpers
+Obelix comes with a couple of [custom Handlebars helpers](https://handlebarsjs.com/guide/#custom-helpers) and exposes the ability to define your own custom helpers specific to your site.
+
+The in-the-box custom helpers are `sort` and `reverse`. Both operate on arrays. `Sort` sorts its input array. By default, `sort` will use whatever built-in comparison operation JavaScript defines for the contents of the array, but for the special case of an array of objects `sort` can be passed the `key` [hash argument](https://handlebarsjs.com/guide/expressions.html#helpers-with-hash-arguments), in which case it will sort by comparing the value of the specified `key` in each object in the array.
+
+The `reverse` helper does what it says on the tin - it reverses the input array.
+
+You can register your own custom Handlebars helpers by passing a `"handlebarsHelpers"` option in `obelix.json`. This should be the path to a JavaScript module which should return a single object. The returned object's keys are the names of the custom helpers and the values should be the functions defining each helper. See [the Handlebars documentation](https://handlebarsjs.com/guide/expressions.html#helpers) for details on writing custom helpers.
 
 ## Plugins
+Still writing this part. Check back soon!
