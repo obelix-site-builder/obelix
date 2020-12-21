@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Obelix</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/typography.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.1/styles/default.min.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <span>Obelix</span>
+        <a href="."><img alt="obelix" src="images/obelix-small.png">
+</a><a href=".">Documentation</a>
+        <a href="https://github.com/obelix-site-builder/obelix">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Obelix: simple &#x26; reliable static site generator</h1>
+      <p>
+        <img src="images/obelix.jpg" alt="obelix the gaul">
+      </p>
+      <p>Obelix is a <a href="https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/">static site generator</a>. Its primary goals are simplicity, ease of use, and extensibility.</p>
+      <p>In a nutshell, a static site generator transforms a set of input data into static assets (HTML, CSS, JavaScript, images, etc.) ready to be served by a web server. The input data can come from a wide variety of sources, from local files on disk to APIs.</p>
+      <p>Out of the box, Obelix supports:</p>
+      <ul>
+        <li><a href="https://commonmark.org/">CommonMark</a>-compliant markdown rendering</li>
+        <li>Page and post metadata via <a href="https://rollout.io/blog/yaml-tutorial-everything-you-need-get-started/">YAML</a> frontmatter</li>
+        <li>String templating powered by <a href="https://handlebarsjs.com/">Handlebars</a></li>
+        <li>Layout templates to apply a common layout to the whole site or a subdirectory</li>
+        <li>List templates to render index pages, feeds, or any other listing of a subdirectory</li>
+        <li>A powerful plugin system that allows developers to write JavaScript to pull in data from external APIs, transform existing data before it gets rendered, or anything else you can imagine</li>
+      </ul>
+      <h2>Installation</h2>
+      <p>Obelix is available <a href="npmjs.com/obelix">on NPM</a>. It's meant to be installed globally:</p>
+      <pre><code>$ sudo npm install -g obelix
+</code></pre>
+      <h2>Getting started</h2>
+      <p>An Obelix site consists of a directory containing the source files for the website and an <code>obelix.json</code> configuration file. At a minimum, this file needs to contain two keys, <code>"src"</code> and <code>"out"</code>:</p>
+      <pre><code class="language-json">{
+    "src": "source",
+    "out": "build"
+}
+</code></pre>
+      <p>The <code>"src"</code> key should be the relative path to the directory where your site's source files live. The <code>"out"</code> key is the relative path to the directory where Obelix will output the built site. For example, the directory for the site described by the <code>obelix.json</code> above might look like this:</p>
+      <pre><code>.
+├── obelix.json
+└── source
+    ├── index.md
+    └── # all site source files here
+</code></pre>
+      <p>To build the site, run:</p>
+      <pre><code>$ obelix build
+</code></pre>
+      <p>This will parse through all file in the source directory, transform them as necessary, and render the final site to the output directory (creating it if necessary). Any markdown files will get transformed to HTML, frontmatter and Handlebars template expressions will be processed, and layout and list templates will be applied.</p>
+      <p>There are a few other keys you can put in <code>obelix.json</code>:</p>
+      <ul>
+        <li><code>"metadata"</code>: this should be a JSON object containing site metadata. This object will exposed in Handlebars templates as the <code>site</code> key (see below)</li>
+        <li><code>"plugins"</code>: An object mapping plugin names to configuration options. More details on this in the Plugins section below</li>
+      </ul>
+      <h2>Source file configuration</h2>
+      <p>All source files in an Obelix site are considered either an <code>asset</code> or a <code>page</code>. A <code>page</code> is a text file (with any file extension) where the beginning of the file contains <a href="https://rollout.io/blog/yaml-tutorial-everything-you-need-get-started/">YAML</a> frontmatter. YAML frontmatter is used to specify metadata about the page and consists of the characters <code>---</code>, followed by a newline and a YAML document containing data you want, and finally another newline and the closing characters <code>---</code>. For example:</p>
+      <pre><code>---
+author: Getafix
+title: Little-known herbs of Gaul
+published: 2020-12-17
+tags:
+  - blog
+  - druidism
+---
+And then the page content goes here!
+</code></pre>
+      <p>Obelix performs some default transformations on <code>page</code>-type sources, including expanding Handlebars template expressions and applying layout templates, and exposes these files as data in list templates (more on all this later).</p>
+      <p>Any file that does not contain YAML frontmatter, including image or other non-text files, are considered <code>asset</code>-type sources. Obelix does no additional processing on <code>asset</code> files - it just copies them verbatim to the output directory.</p>
+      <p><strong>Important</strong>: Even if you have no metadata you want to attach to a page, you need to put YAML frontmatter on it for Obelix to process it. In these cases, you can just put the opening <code>---</code> and closing <code>---</code> with no content in between.</p>
+      <p>The source directory structure determines the output directory structure. For example, a source file <code>blob/post1.md</code> would get written to the output directory as <code>blog/post1.html</code>.</p>
+      <h2>Template expansion</h2>
+      <p><code>Page</code>-type source files can contain <a href="https://handlebarsjs.com">Handlebars</a> template expressions. Template expressions are delimited by double curly braces - for example, <code>{{ title }}</code>. Any page metadata in the page's frontmatter is available as a variable for use in a template expression, and any site metadata set in <code>obelix.json</code> is available in the <code>site</code> object in template expressions.</p>
+      <p>For example, given the following <code>obelix.json</code>:</p>
+      <pre><code class="language-json">{
+    "src": "source",
+    "out": "build",
+    "metadata": {
+        "publisher": "When In Rome LLC"
+    }
+}
+</code></pre>
+      <p>And the following <code>page</code> source <code>post.md</code>:</p>
+      <pre><code>---
+author: Caesar
+---
+This post was written by {{ author }} and published by {{ site.publisher }}
+</code></pre>
+      <p>The output file <code>post.html</code> would render like this:</p>
+      <pre><code class="language-html">&#x3C;html>
+  &#x3C;body>
+    &#x3C;p>This post was written by Caesar and published by When In Rome LLC&#x3C;/p>
+  &#x3C;/body>
+&#x3C;/html>
+</code></pre>
+      <p>Handlebars offers many additional templating features - see <a href="https://handlebarsjs.com/guide/">the official guide</a> to learn more.</p>
+      <h2>Layout templates</h2>
+      <p>Layout templates allow you to apply a unified layout to <code>page</code> sources. By default, layout templates are any file named <code>layout.html.hbs</code> or <code>layout.html.handlebars</code>, but these defaults can be overridden by the <code>"layoutTemplates"</code> <code>obelix.json</code> field, which should be an array of layout template names. Individual pages can also specify a <code>template</code> metadata field, which should be the name of the file to use as a layout template for that page. Layout templates apply to all <code>page</code> sources in the same directory they are in and in subdirectories, but if a subdirectory has its own layout template that template overrides the parent layout template. This means you can put a <code>layout.html.hbs</code> at the root of your site that will be applied by default to every <code>page</code> in the site, but you can override that template for individual subdirectories by giving them their own <code>layout.html.hbs</code>.</p>
+      <p>A layout template is a Handlebars template that gets passed the content of the page it is applied to as the <code>content</code> key. When rendering a <code>page</code>, if Obelix finds a layout template for that page it will render the layout template and replace the output content with the result.</p>
+      <p>An example should make things clearer. Given this <code>page</code> source <code>post.md</code>:</p>
+      <pre><code>---
+---
+# My Post
+This is some hot content!
+</code></pre>
+      <p>And this <code>layout.html.hbs</code>:</p>
+      <pre><code class="language-html">&#x3C;html>
+  &#x3C;head>
+     &#x3C;link rel="stylesheet" href="styles.css" />
+  &#x3C;/head>
+  &#x3C;body>
+    &#x3C;div class="container">
+       {{{ content }}}
+    &#x3C;/div>
+  &#x3C;/body>
+&#x3C;/html>
+</code></pre>
+      <p>The output file <code>post.html</code> would look like this:</p>
+      <pre><code class="language-html">&#x3C;html>
+  &#x3C;head>
+     &#x3C;link rel="stylesheet" href="styles.css" />
+  &#x3C;/head>
+  &#x3C;body>
+    &#x3C;div class="container">
+      &#x3C;h1>My Post&#x3C;/h1>
+      &#x3C;p>This is some hot content!&#x3C;/p>
+    &#x3C;/div>
+  &#x3C;/body>
+&#x3C;/html>
+</code></pre>
+      <p>Note the use of triple curly braces in <code>{{{ content }}}</code>. This tells Handlebars not to HTML-escape the result of the expression. See <a href="https://handlebarsjs.com/guide/#html-escaping">here</a> for more info.</p>
+      <h2>List templates</h2>
+      <p>A list template is like a layout template, but instead of being passed a single page it gets passed a list of pages. List templates can be used to generate index pages, RSS feeds, or any other collection of content. A list template is simply any file with a <code>.hbs</code> or <code>.handlebars</code> file extension that isn't a layout template. Unless you have the <code>"layoutTemplates"</code> configuration option set, this means that any <code>.hbs</code> or <code>.handlebars</code> file that isn't named <code>layout.html.hbs</code>, <code>layout.html.handlebars</code>, or is the target of a <code>template</code> page metadata will be treated as a list template.</p>
+      <p>List templates get passed an array of all pages in the same directory as them as the <code>pages</code> variable. Each item in this list is a <code>page</code> object that the one that gets passed to layout templates - it will have a <code>content</code> key containing the page content in addition to any keys in the page frontmatter. The <code>pages</code> array can be iterated over using the <a href="https://handlebarsjs.com/guide/builtin-helpers.html#each">Handlebars <code>each</code> helper</a>:</p>
+      <pre><code class="language-html">&#x3C;html>
+    &#x3C;body>
+      {{#each pages}}
+          &#x3C;h1>{{ title }}&#x3C;/h1>
+          
+      {{/each}}
+    &#x3C;/body>
+&#x3C;/html>
+</code></pre>
+      <p>If you want to iterate over pages that aren't in the same directory as the list template, you can use the <code>site.pages</code> variable. This variable is a nested array of all pages in the site. The format of <code>site.pages</code> is a little weird: it's a recursive array that can be iterated over to access the pages in the top-level directories, but exposes subdirectories as attributes on that array with values that are themselves recursive arrays. For example, given the following site structure:</p>
+      <pre><code>.
+├── index.md
+├── about.md
+└── blog
+    ├── post1.md
+    └── post2.md
+</code></pre>
+      <p>The <code>site.pages</code> variable would be an array containing <code>index.md</code> and <code>about.md</code>, and <code>site.pages.blog</code> would be an array containing <code>post1.md</code> and <code>post2.md</code>.</p>
+      <p>If you have a directory whose name isn't a valid JavaScript identifier, you can access it using index notation, e.g. <code>site.pages["My weird folder"]</code>. Although this layout is a bit unconventional, it makes it convenient to loop through pages using the <code>{{each}}</code> helper at any level in the directory structure.</p>
+      <p>List templates can be either <code>page</code> or <code>asset</code> sources. If you include a frontmatter block in a list template, it will be treated as a <code>page</code> and have layout templates applied to it. If not, it will be treated as an <code>asset</code> and layout templates will not be applied to it.</p>
+      <h2>Custom Handlebars helpers</h2>
+      <p>Obelix comes with a couple of <a href="https://handlebarsjs.com/guide/#custom-helpers">custom Handlebars helpers</a> and exposes the ability to define your own custom helpers specific to your site.</p>
+      <p>The in-the-box custom helpers are <code>sort</code> and <code>reverse</code>. Both operate on arrays. <code>Sort</code> sorts its input array. By default, <code>sort</code> will use whatever built-in comparison operation JavaScript defines for the contents of the array, but for the special case of an array of objects <code>sort</code> can be passed the <code>key</code> <a href="https://handlebarsjs.com/guide/expressions.html#helpers-with-hash-arguments">hash argument</a>, in which case it will sort by comparing the value of the specified <code>key</code> in each object in the array.</p>
+      <p>The <code>reverse</code> helper does what it says on the tin - it reverses the input array.</p>
+      <p>You can register your own custom Handlebars helpers by passing a <code>"handlebarsHelpers"</code> option in <code>obelix.json</code>. This should be the path to a JavaScript module which should return a single object. The returned object's keys are the names of the custom helpers and the values should be the functions defining each helper. See <a href="https://handlebarsjs.com/guide/expressions.html#helpers">the Handlebars documentation</a> for details on writing custom helpers.</p>
+      <h2>Plugins</h2>
+      <p>Still writing this part. Check back soon!</p>
+    </main>
+    <link rel="preconnect" href="https://fonts.gstatic.com"><link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&#x26;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&#x26;family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&#x26;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400;1,700&#x26;display=swap" rel="stylesheet">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.1/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
