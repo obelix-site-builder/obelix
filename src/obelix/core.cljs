@@ -1,6 +1,7 @@
 (ns obelix.core
   (:require [obelix.handlebars :as hb]
             [obelix.plugin-loader :as plugins]
+            [obelix.plugins.data :as data]
             [obelix.plugins.filesystem :as filesystem]
             [obelix.plugins.format :as format]
             [obelix.plugins.layout :as layout]
@@ -20,6 +21,8 @@
    (url/plugin config)
    (plugins/hook-fn plugins :template)
    (template/plugin config)
+   (plugins/hook-fn plugins :data)
+   (data/plugin config)
    (plugins/hook-fn plugins :listTemplate)
    (layout/list-template-plugin config)
    (plugins/hook-fn plugins :layout)
