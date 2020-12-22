@@ -18,3 +18,17 @@
         <li>{{ url }}</li>
     {{/each}}
 </ul>
+
+<h1>Data</h1>
+<p>Foo: {{ site.data.someData.foo }}</p>
+<ul>
+    {{#each site.data.someData.baz }}
+        <li>Qux: {{ qux }}</li>
+    {{/each}}
+</ul>
+
+<ul>
+    {{#each site.data.subdir.subsubdir.moreData }}
+        <li>{{ greeting }}, {{ thing }}
+    {{/each}}
+</ul>
