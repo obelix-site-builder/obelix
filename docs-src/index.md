@@ -196,6 +196,13 @@ If you have a directory whose name isn't a valid JavaScript identifier, you can 
 
 List templates can be either `page` or `asset` sources. If you include a frontmatter block in a list template, it will be treated as a `page` and have layout templates applied to it. If not, it will be treated as an `asset` and layout templates will not be applied to it.
 
+## Data files
+Source files with a `.json`, `.yaml`, or `.yml` extension are considered data files. Data files are a way to store structured data that isn't meant to be displayed literally. Obelix parses all the data files it finds and passes them into list and layout templates as the `site.data` variable. This variable is a dictionary of data file paths to data file contents. If the data file is in a subdirectory, the path to the data in `site.data` matches the path to the data file. For example, the data file `foo/bar/baz.json` would be exposed in templates as `site.data.foo.bar.baz`.
+
+Data files can have YAML frontmatter. If they do, they are passed through the same Handlebars templating step as `page`-type sources and can contain Handlebars expressions referencing the frontmatter.
+
+By default, data files are not rendered to the output directory. If you want a literal `.json` or `.yaml` file in the output directory, give the data file the frontmatter expression `render: true`.
+
 ## Custom Handlebars helpers
 Obelix comes with a couple of [custom Handlebars helpers](https://handlebarsjs.com/guide/#custom-helpers) and exposes the ability to define your own custom helpers specific to your site.
 
