@@ -26,3 +26,9 @@
         <li>Qux: {{ qux }}</li>
     {{/each}}
 </ul>
+
+<ul>
+    {{#each site.data.subdir.subsubdir.moreData }}
+        <li>{{ greeting }}, {{ thing }}
+    {{/each}}
+</ul>
