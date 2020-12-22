@@ -86,6 +86,22 @@
           (push-at-path! page-path pages page))))
     pages))
 
+(defn site-data-files
+  [site-data]
+  (clj->js
+   (reduce
+    (fn [acc {:keys [type name] :as node}]
+      (if (= type "data")
+        (let [name-parts (s/split (path/join (path/dirname name)
+                                             (path/basename name
+                                                            (path/extname name)))
+                                  path/sep)]
+          (assoc-in acc (map keyword name-parts)
+                    (:data node)))
+        acc))
+    {}
+    (:routes site-data))))
+
 (defn get-list-pages [config site-data prefix-map template-name]
   (->> (get prefix-map (path/dirname template-name))
        (filter #(and
@@ -95,7 +111,8 @@
        (map #(-> (:metadata %)
                  (assoc :content (:content %))
                  (assoc :site (assoc (:metadata site-data)
-                                     :pages (site-pages site-data)))))))
+                                     :pages (site-pages site-data)
+                                     :data (site-data-files site-data)))))))
 
 (defn list-template-mapper
   [config site-data prefix-map {:keys [name renderedContent content] :as page}]
@@ -107,7 +124,8 @@
         (-> page
             (assoc :content
                    (template (clj->js {:site (assoc (:metadata site-data)
-                                                    :pages (site-pages site-data))
+                                                    :pages (site-pages site-data)
+                                                    :data (site-data-files site-data))
                                        :pages pages})))
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
@@ -126,11 +144,14 @@
               (log/debug "Applying layout template" (:name layout-template) "to page" name)
               (let [template (handlebars/compile (str (:content layout-template)))]
                 (assoc page :content
-                       (template (clj->js (-> (:metadata page)
-                                              (assoc :content content)
-                                              (assoc :site
-                                                     (assoc (:metadata site-data)
-                                                            :pages (site-pages site-data)))))))))
+                       (template
+                        (clj->js
+                         (-> (:metadata page)
+                             (assoc :content content)
+                             (assoc :site
+                                    (assoc (:metadata site-data)
+                                           :pages (site-pages site-data)
+                                           :data (site-data-files site-data)))))))))
             page)))
 
 (defn routes-by-prefix

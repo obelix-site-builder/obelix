@@ -22,7 +22,7 @@
     page))
 
 (defn plugin
-  "Formats output files that it knows how to handle."
+  "Parses data files"
   [_config]
   (fn [site-data]
     (log/debug "Parsing data files")
