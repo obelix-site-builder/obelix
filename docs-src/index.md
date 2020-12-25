@@ -212,5 +212,28 @@ The `reverse` helper does what it says on the tin - it reverses the input array.
 
 You can register your own custom Handlebars helpers by passing a `"handlebarsHelpers"` option in `obelix.json`. This should be the path to a JavaScript module which should return a single object. The returned object's keys are the names of the custom helpers and the values should be the functions defining each helper. See [the Handlebars documentation](https://handlebarsjs.com/guide/expressions.html#helpers) for details on writing custom helpers.
 
-## Plugins
-Still writing this part. Check back soon!
+## Using plugins
+Obelix plugins allow you to extend the site building process in any way you want, from adding new page and data sources to transforming content to writing output to third-party systems. You can install and distribute third-party plugins via `npm`, and you can also write plugins local to your site that live alongside the site source.
+
+Using a plugin in your site has two steps: first, you have to install the plugin, then you have to configure the plugin in your `obelix.json`. Third-party plugins can be installed by `npm install`-ing them into your site directory. Local plugins should be placed in a directory called `plugins` at the same level as `obelix.json` (for more info on writing your own plugins, see below).
+
+Once the plugin is installed, it must be configured. To do this add a field to `obelxix.json` called `"plugins"`. This should be a map where the keys are plugin names and the values are plugin configuration objects. Here's an example `plugins` section:
+
+```json
+{
+  "src": "src",
+  "out": "out",
+  "plugins": {
+    "obelix-plugin-typography": {
+      "fileName": "css/typography.css",
+      "theme": "typography-theme-us-web-design-standards"
+    },
+    "my-local-plugin": {}
+  }
+}
+```
+
+The contents of the configuration section is specific to each plugin. Note that even plugins which require no configuration, like `"my-local-plugin"` above, still need to have an empty configuration object in `obelix.json` to be registered.
+
+## Writing plugins
+I'm still writing this section. Check back soon!
