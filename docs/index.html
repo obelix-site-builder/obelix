@@ -168,8 +168,25 @@ This is some hot content!
       <p>The in-the-box custom helpers are <code>sort</code> and <code>reverse</code>. Both operate on arrays. <code>Sort</code> sorts its input array. By default, <code>sort</code> will use whatever built-in comparison operation JavaScript defines for the contents of the array, but for the special case of an array of objects <code>sort</code> can be passed the <code>key</code> <a href="https://handlebarsjs.com/guide/expressions.html#helpers-with-hash-arguments">hash argument</a>, in which case it will sort by comparing the value of the specified <code>key</code> in each object in the array.</p>
       <p>The <code>reverse</code> helper does what it says on the tin - it reverses the input array.</p>
       <p>You can register your own custom Handlebars helpers by passing a <code>"handlebarsHelpers"</code> option in <code>obelix.json</code>. This should be the path to a JavaScript module which should return a single object. The returned object's keys are the names of the custom helpers and the values should be the functions defining each helper. See <a href="https://handlebarsjs.com/guide/expressions.html#helpers">the Handlebars documentation</a> for details on writing custom helpers.</p>
-      <h2>Plugins</h2>
-      <p>Still writing this part. Check back soon!</p>
+      <h2>Using plugins</h2>
+      <p>Obelix plugins allow you to extend the site building process in any way you want, from adding new page and data sources to transforming content to writing output to third-party systems. You can install and distribute third-party plugins via <code>npm</code>, and you can also write plugins local to your site that live alongside the site source.</p>
+      <p>Using a plugin in your site has two steps: first, you have to install the plugin, then you have to configure the plugin in your <code>obelix.json</code>. Third-party plugins can be installed by <code>npm install</code>-ing them into your site directory. Local plugins should be placed in a directory called <code>plugins</code> at the same level as <code>obelix.json</code> (for more info on writing your own plugins, see below).</p>
+      <p>Once the plugin is installed, it must be configured. To do this add a field to <code>obelxix.json</code> called <code>"plugins"</code>. This should be a map where the keys are plugin names and the values are plugin configuration objects. Here's an example <code>plugins</code> section:</p>
+      <pre><code class="language-json">{
+  "src": "src",
+  "out": "out",
+  "plugins": {
+    "obelix-plugin-typography": {
+      "fileName": "css/typography.css",
+      "theme": "typography-theme-us-web-design-standards"
+    },
+    "my-local-plugin": {}
+  }
+}
+</code></pre>
+      <p>The contents of the configuration section is specific to each plugin. Note that even plugins which require no configuration, like <code>"my-local-plugin"</code> above, still need to have an empty configuration object in <code>obelix.json</code> to be registered.</p>
+      <h2>Writing plugins</h2>
+      <p>I'm still writing this section. Check back soon!</p>
     </main>
     <link rel="preconnect" href="https://fonts.gstatic.com"><link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&#x26;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&#x26;family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&#x26;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400;1,700&#x26;display=swap" rel="stylesheet">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.1/highlight.min.js"></script>
