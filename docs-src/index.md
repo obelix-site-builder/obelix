@@ -246,7 +246,7 @@ To write an Obelix plugin, there are a couple of concepts to understand: the Obe
 ### The Obelix data model
 Internally, Obelix uses a simple JSON structure to represent a site. Its general shape is as follows:
 
-```json
+```javascript
 {
   "metadata": {
     // any metadata general to the site as a whole
