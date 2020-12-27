@@ -235,7 +235,7 @@ Once the plugin is installed, it must be configured. To do this add a field to `
 }
 ```
 
-The contents of the configuration section is specific to each plugin. Note that even plugins which require no configuration, like `"my-local-plugin"` above, still need to have an empty configuration object in `obelix.json** to be registered.
+The contents of the configuration section is specific to each plugin. Note that even plugins which require no configuration, like `"my-local-plugin"` above, still need to have an empty configuration object in `obelix.json` to be registered.
 
 ## Writing plugins
 
