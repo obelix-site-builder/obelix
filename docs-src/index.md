@@ -52,6 +52,13 @@ $ obelix build
 
 This will parse through all file in the source directory, transform them as necessary, and render the final site to the output directory (creating it if necessary). Any markdown files will get transformed to HTML, frontmatter and Handlebars template expressions will be processed, and layout and list templates will be applied.
 
+You can also run:
+```
+$ obelix serve
+```
+
+This will start a web server serving your site on port 8080 (by default - pass the `-p` option to change this). The server will automatically rebuild the site whenever it detects changes to a source file. This is a just a development convenience - the `obelix serve` server is not production-ready!
+
 There are a few other keys you can put in `obelix.json`:
 
 - `"metadata"`: this should be a JSON object containing site metadata. This object will exposed in Handlebars templates as the `site` key (see below)
@@ -196,6 +203,8 @@ If you have a directory whose name isn't a valid JavaScript identifier, you can 
 
 List templates can be either `page` or `asset` sources. If you include a frontmatter block in a list template, it will be treated as a `page` and have layout templates applied to it. If not, it will be treated as an `asset` and layout templates will not be applied to it.
 
+Tip: Obelix adds a `url` metadata field to every page by default. This is especially useful in list templates as it lets you construct a link to the pages that the list template is rendering.
+
 ## Data files
 Source files with a `.json`, `.yaml`, or `.yml` extension are considered data files. Data files are a way to store structured data that isn't meant to be displayed literally. Obelix parses all the data files it finds and passes them into list and layout templates as the `site.data` variable. This variable is a dictionary of data file paths to data file contents. If the data file is in a subdirectory, the path to the data in `site.data` matches the path to the data file. For example, the data file `foo/bar/baz.json` would be exposed in templates as `site.data.foo.bar.baz`.
 
@@ -236,4 +245,100 @@ Once the plugin is installed, it must be configured. To do this add a field to `
 The contents of the configuration section is specific to each plugin. Note that even plugins which require no configuration, like `"my-local-plugin"` above, still need to have an empty configuration object in `obelix.json` to be registered.
 
 ## Writing plugins
-I'm still writing this section. Check back soon!
+
+*Note: this is an advanced topic. You don't need to read it unless you are interesting in extending Obelix in some way beyond its default capabilites*
+
+To write an Obelix plugin, there are a couple of concepts to understand: the Obelix data model and the steps of the build pipeline.
+
+### The Obelix data model
+Internally, Obelix uses a simple JSON structure to represent a site. Its general shape is as follows:
+
+```javascript
+{
+  "metadata": {
+    // any metadata general to the site as a whole
+  },
+  "routes": [
+    {
+      "name": "relative/path/to/file.md",
+      "type": "page", // or "asset" or "data"
+      "content": "Page content here",
+      "metadata": {
+        // page-specific metadata including frontmatter here
+      }
+    }
+  ]
+}
+```
+
+The `routes` field contains all pages, assets, and data files for the site. Note that `routes` is a flat array - any content hierarchies are implied by directory separators within the `name` field of each element.
+
+### The build pipeline
+The Obelix build process is implemented as a pipeline of functions. Each function takes as an argument the data structure defined above, and returns that data structure modified in some way. The output from the previous step becomes the input to the next step in the pipeline.
+
+The pipeline consists of the following steps:
+
+  1. **`source`**: In this step, Obelix traverses the source directory and inserts entries into the `routes` array for all files it finds. Files are marked as `"type": "asset"` by default, but if Obelix finds a frontmatter block at the beginning of a file it reads the frontmatter in the `"metadata"` field of the `routes` array entry and marks the entry as `"type": "page"` instead. In either case, the file's contents is read as a raw [`Buffer`](https://nodejs.org/docs/latest-v15.x/api/buffer.html) object into the `"content"` field.
+
+  2. **`markdown`**: In this step, Obelix processes any entries in the `routes` array with a `.md` or `.markdown` extension. It reads the `"content"` field of the entry and parses it from Markdown into HTML, writing the result back into the `"content"` field. It also changes the file extension of the entry to `.html`.
+  
+  3. **`url`**: In this step, Obelix adds a `"url"` field to the `"metadata"` of each node in the `routes` array. This is done simply by taking the `"name"` of the entry and adding a leading `/`, thus creating an absolute URL for that page that is available for use in templating.
+
+  4. **`template`**: In this step, Obelix resolves any Handlebars expressions within page sources. For every entry in the `routes` array with `"type": "page"`, Obelix compiles the `"content"` field as a Handlebars template and executes that template, passing the page `"metadata"` map as the Handlebars template data. Obelix also adds any site metadata (the top-level `"metadata"` field in the data model) as the `"site"` variable within the Handlebars template. The result of the templating is written back to the entry's `"content"` field.
+
+  5. **`data`**: In this step, Obelix parses data files. It looks through all entries in the `routes` array with extension `.json`, `.yml`, or `.yaml`, and if finds any parses their `"contents"` field as a data file of the appropriate type (using a JSON or a YAML parser). The resulting data structure is written to the entry as the `"data"` field (note that this step does not change the entry `"contents"`). This step also changes the `"type"` of the entry to `"data"`.
+  
+  6. **`listTemplate`**: In this step, Obelix renders all list templates that it finds. First, it identifies `routes` array entries that are list templates by selecting all entries with the file extension `.hbs` or `.handlebars` that are not layout templates (see the next step for how layout templates are identified). For any of these entries that it finds, it constructs a Handlebars context for the list template and renders the template back to the entry's `"content"` field. 
+  
+  The Handlebars context is constructed as follows: Obelix finds all `"type": "page"` entries whose `"name"` indicates that they are in the same directory as the list template and for each one, constructs an object whose keys are the page's metadata entries plus the special key `"content"` containing the page's content; it also constructs the `site` object, which consists of the `"pages"` and `"data"` fields mentioned in the list templates section above plus any defined site metadata. The `site.data` field uses the `"data"` key added to entries in the `data` step. The `pages` and `site` objects, as well as any `"metadata"` defined on the list template, get passed as fields in the Handlebars context to the list template. 
+  
+  Note that this step does not change the `"type"` of the list template, so if the list template was `"type": "page"` it will remain that way and have layout templates applied to it in the `layout` step.
+  
+  7. **`layout`**: In this step, Obelix applies layout templates to `"type": "page"` entries in the `routes` array. For each `"type": page` entry, it first identifies which layout template (if any) should apply to that page. To do this, it first checks for a `"template"` key in the entry `"metadata"`. If there isn't one, it looks for entries in the same directory or higher called `layout.html.hbs` or `layout.html.handlebars` (unless there is a `layoutTemplates` field in `obelix.json`, in which case it looks for files with those names). 
+  
+  If it finds a layout template by either of those methods, Obelix applies the layout template. It constructs a Handlebars context that consists of any page `"metadata"`, a `"content"` variables holding the page content, and the same `"site"` object as described in the `listTemplate` step; it then passes this context object to the Handlebars template in the layout template's `"content"` field and replaces the `"content"` field of the target page with the rendered template. Finally, this step removes any layout templates from the `routes` array so that they don't get rendered to the output directory.
+  
+  8. **`html`**: In this step, Obelix formats any source files that it knows how to. Currently it only knows how to format `.html` files. It overwrites the page `"content"` field with the formatted version of the page HTML.
+  
+  9. **`output`**: In the step, Obelix writes the entries in the `routes` array to the directory defined as `out` in `obelix.json`. If the output directory already exists, Obelix deletes and recreates it, then it iterates through the `routes` array and writes the `content` of each entry to the file in the output directory that corresponds to the entry `"name"` field. Obelix automatically creates any needed sub-directories. Entries with `"type": "page"` or `"type": "asset"` are always written to disk, but entries with `"type": "data"` are only output if they have the field `"render": true` in their `"metadata"`.
+
+### Plugin structure
+After understanding the Obelix data structure and build pipeline, it's easy to grasp how a plugin is structured: a plugin is simply a collection of hooks that run at various stages during the build pipeline and manipulate the site data structure. A hook runs before every stage in the pipeline, and is named the same thing as the pipeline step. For example, the `"source"` hook runs before the `source` step and the `"listTemplate"` hook runs before the `listTemplate` step.
+
+An Obelix plugin is a [Node.js module](https://nodejs.org/api/modules.html) that exports a single function. This function takes in the plugin configuration object as an argument and should return a plugin object, which is an object that contains a key called `"hooks"`. The `"hooks"` field of the plugin object is itself a map of hook names to hook function. A hook function is simply a function that takes in the site data map as its argument and returns a new site data map to be passed onto the next step in the build pipeline.
+
+Here's an example of a really simple plugin that adds a metadata field to all pages in a site:
+
+```javascript
+function addGreeting(siteData) {
+  siteData.routes.forEach(entry => {
+    if (entry.type == "page") {
+      entry.metadata.greeting = "Hello, world!";
+    }
+  });
+  return siteData;
+}
+
+module.exports = config => {
+  // config contains the plugin configuration, although this plugin
+  // doesn't require any
+  return {
+    hooks: {
+      template: addGreeting
+    }
+  };
+};
+```
+
+This plugin only defines one hook, the `template` hook, but plugins can use as many hooks as they need to accomplish their goals.
+
+If you want your plugin to be publicly available, consider publishing it on NPM; if you do, tag it with the tag `obelix-plugin` to help others discover it. If your plugin is just for your site, you can save it as a module in the `plugins` directory at the same level as your site's `obelix.json` (a Node.js module is either a single file, where the name of the file is the name of the module, or it is a directory containing an `index.js` file, in which case the name of the directory is the name of the module).
+
+### Which hooks should you use?
+Depending on the purpose of your plugin, there are a couple of different hooks you could consider using:
+
+- If your plugin adds new data files or site assets, you should do this in the `source` hook
+- If your plugin adds or mutates page metadata, you should do this in the `template`, `listTemplate`, or `layout` hooks, depending on how early in the build process users will need this metadata available
+- If your plugin passes the Obelix site as input to some other service, such as an API, a CMS, a build system, a backup drive/service, or even just another output directory, you should use the `output` hook
+
+Writing plugins can be complicated. If you run into any problems, [open a GitHub issue](https://github.com/obelix-site-builder/obelix/issues/new) and I'll try to get it sorted out.
