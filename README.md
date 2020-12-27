@@ -1,4 +1,4 @@
-# Obelix# Obelix
+# Obelix
 > A simple & reliable static site generator
 
 ![obelix the gaul](docs-src/images/obelix.jpg)
