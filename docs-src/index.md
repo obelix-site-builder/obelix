@@ -246,7 +246,7 @@ The contents of the configuration section is specific to each plugin. Note that 
 
 ## Writing plugins
 
-*Note: this is an advanced topic. You don't need to read it unless you are interesting in extending Obelix in some way beyond its default capabilites*
+*Note: this is an advanced topic. You don't need to read it unless you are interested in extending Obelix in some way beyond its default capabilites*
 
 To write an Obelix plugin, there are a couple of concepts to understand: the Obelix data model and the steps of the build pipeline.
 
