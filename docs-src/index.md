@@ -52,6 +52,13 @@ $ obelix build
 
 This will parse through all file in the source directory, transform them as necessary, and render the final site to the output directory (creating it if necessary). Any markdown files will get transformed to HTML, frontmatter and Handlebars template expressions will be processed, and layout and list templates will be applied.
 
+You can also run:
+```
+$ obelix serve
+```
+
+This will start a web server serving your site on port 8080 (by default - pass the `-p` option to change this). The server will automatically rebuild the site whenever it detects changes to a source file. This is a just a development convenience - the `obelix serve` server is not production-ready!
+
 There are a few other keys you can put in `obelix.json`:
 
 - `"metadata"`: this should be a JSON object containing site metadata. This object will exposed in Handlebars templates as the `site` key (see below)

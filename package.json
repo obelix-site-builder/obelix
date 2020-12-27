@@ -1,8 +1,11 @@
 {
   "name": "obelix",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "author": "Jeremy Dormitzer <jeremy.dormitzer@gmail.com>",
   "description": "A static site generator",
+  "homepage": "https://obelix-site-builder.github.io/obelix",
+  "repository": "https://github.com/obelix-site-builder/obelix",
+  "license": "MIT",
   "bin": {
     "obelix": "out/main.js"
   },
