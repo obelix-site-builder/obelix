@@ -54,6 +54,15 @@
     (when layout (log/debug "Chose layout" (:name layout) "for" (:name page)))
     layout))
 
+(defn strip-template-url-extension
+  [page]
+  (if-let [url (get-in page [:metadata :url])]
+    (assoc-in page [:metadata :url]
+              (path/join (path/dirname url)
+                         (path/basename (path/basename url ".hbs")
+                                        ".handlebars")))
+    page))
+
 (defn site-pages
   "Returns all pages in the site formatted for Handlebars
   consumption.
@@ -68,7 +77,8 @@
   (let [pages #js []
         push-at-path! (fn push-at-path! [[first-path & rest-path] pages page]
                         (if (nil? first-path)
-                          (.push pages (-> (:metadata page)
+                          (.push pages (-> (strip-template-url-extension page)
+                                           (:metadata)
                                            (assoc :content (:content page))
                                            (clj->js)))
                           (do
@@ -123,13 +133,16 @@
             template (handlebars/compile (str (or renderedContent content)))]
         (-> page
             (assoc :content
-                   (template (clj->js {:site (assoc (:metadata site-data)
+                   (template (clj->js (assoc (:metadata page)
+                                             :site (assoc
+                                                    (:metadata site-data)
                                                     :pages (site-pages site-data)
                                                     :data (site-data-files site-data))
-                                       :pages pages})))
+                                             :pages pages))))
             (assoc :name (path/join (path/dirname name)
                                     (path/basename (path/basename name ".hbs")
-                                                   ".handlebars"))))))
+                                                   ".handlebars")))
+            (strip-template-url-extension))))
     page))
 
 (defn layout-mapper
@@ -146,7 +159,8 @@
                 (assoc page :content
                        (template
                         (clj->js
-                         (-> (:metadata page)
+                         (-> (strip-template-url-extension page)
+                             (:metadata)
                              (assoc :content content)
                              (assoc :site
                                     (assoc (:metadata site-data)
