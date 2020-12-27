@@ -34,7 +34,7 @@
    (plugins/hook-fn plugins :layout)
    (layout/layout-plugin config)
 
-   (plugins/hook-fn plugins :html)
+   (plugins/hook-fn plugins :format)
    (format/plugin config)
 
    (plugins/hook-fn plugins :output)
