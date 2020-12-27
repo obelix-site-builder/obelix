@@ -1,0 +1,10 @@
+---
+foo: bar
+---
+<h1>Top-level</h1>
+<h2>{{ foo }}</h2>
+<ul>
+    {{#each site.pages}}
+        <li>{{ url }}</li>
+    {{/each}}
+</ul>
