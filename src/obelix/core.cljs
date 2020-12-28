@@ -48,5 +48,5 @@
         handlers (->> (plugin-pipeline plugins config)
                       (reverse)
                       (apply comp))]
-    (-> (handlers {:metadata (into {} (:site-metadata config)) :routes []})
+    (-> (handlers {:metadata (into {} (:metadata config)) :routes []})
         (update :routes doall))))

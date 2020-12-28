@@ -18,7 +18,7 @@ Out of the box, Obelix supports:
 - A powerful plugin system that allows developers to write JavaScript to pull in data from external APIs, transform existing data before it gets rendered, or anything else you can imagine
 
 ## Installation
-Obelix is available [on NPM](npmjs.com/obelix). It's meant to be installed globally:
+Obelix is available [on NPM](https://npmjs.org/obelix). It's meant to be installed globally:
 
 ```
 $ sudo npm install -g obelix
