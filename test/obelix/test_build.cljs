@@ -52,4 +52,5 @@
   (testing "kitchen_sink"
     (do-build-test {:src-dir (test-site "kitchen_sink" "src")
                     :expected-output-dir (test-site "kitchen_sink"
-                                                    "expected")})))
+                                                    "expected")
+                    :build-opts {:metadata {:testing true}}})))
